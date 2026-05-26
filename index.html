@@ -143,6 +143,49 @@ td:first-child { text-align: center; padding-left: 12px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .err-msg { color: var(--red); }
 
+/* CLICKABLE STAT CELLS IN TABLE */
+.stat-clickable {
+  cursor: pointer; border-radius: 3px; padding: 2px 4px; margin: -2px -4px;
+  transition: background 0.15s;
+}
+.stat-clickable:hover { background: rgba(255,255,255,0.08); }
+.col-wins .stat-clickable:hover { background: rgba(125,216,125,0.15); }
+.col-losses .stat-clickable:hover { background: rgba(255,95,95,0.15); }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 100; align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+@media (min-width: 641px) {
+  .modal-overlay { align-items: center; }
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px 12px 0 0;
+  width: 100%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+@media (min-width: 641px) {
+  .modal { border-radius: 12px; max-height: 75vh; }
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.modal-title { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+.modal-title strong { color: var(--accent); display: block; font-size: 15px; font-family: 'IBM Plex Sans', sans-serif; text-transform: none; letter-spacing: 0; }
+.modal-close {
+  background: none; border: none; color: var(--muted); font-size: 20px;
+  cursor: pointer; padding: 4px 8px; line-height: 1; transition: color 0.15s;
+}
+.modal-close:hover { color: var(--text); }
+.modal-body { overflow-y: auto; padding: 12px 16px 20px; }
+.modal-body .match-card { margin-top: 10px; }
+.modal-body .match-card:first-child { margin-top: 0; }
+.modal-empty { padding: 3rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); }
+
 /* MOBILE */
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -213,13 +256,90 @@ td:first-child { text-align: center; padding-left: 12px; }
 
 </div><!-- /container -->
 
+<!-- PAIR MATCHES MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">
+        <span id="modal-filter-label">Матчи</span>
+        <strong id="modal-pair-name">—</strong>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
 <script>
 const SHEET_ID = '1ckry8Tz1CDlTMvZ_Kh0wUtmKqkWLnNWsbOj82-cex7s';
 
 // Sorting state
 let ratingData = [];
+let matchesData = []; // all parsed matches
 let sortCol = null;   // 'wins' | 'losses' | 'matches'
 let sortDir = 'desc'; // 'asc' | 'desc'
+
+function openModal(pair, filter) {
+  const labels = { wins: 'Победы', losses: 'Поражения', all: 'Все матчи' };
+  document.getElementById('modal-pair-name').textContent = pair;
+  document.getElementById('modal-filter-label').textContent = labels[filter] || 'Матчи';
+
+  const filtered = matchesData.filter(m => {
+    const involved = m.pairA === pair || m.pairB === pair;
+    if (!involved) return false;
+    if (filter === 'wins')   return m.winner === pair;
+    if (filter === 'losses') return m.winner !== '' && m.winner !== pair;
+    return true;
+  });
+
+  const body = document.getElementById('modal-body');
+  if (!filtered.length) {
+    body.innerHTML = '<div class="modal-empty">Матчей нет</div>';
+  } else {
+    body.innerHTML = '';
+    [...filtered].reverse().forEach(m => {
+      const aWon = m.winner === m.pairA;
+      const bWon = m.winner === m.pairB;
+      const eloAHtml = m.eloA !== 0 ? `<span class="match-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA} ELO</span>` : '';
+      const eloBHtml = m.eloB !== 0 ? `<span class="match-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB} ELO</span>` : '';
+      const card = document.createElement('div');
+      card.className = 'match-card';
+      card.innerHTML = `
+        <div class="match-header">
+          <span class="match-num">Матч #${m.num}</span>
+          <span class="match-date">${m.date}</span>
+        </div>
+        <div class="match-body">
+          <div class="match-pair-col">
+            <span class="match-pair ${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
+            ${eloAHtml}
+          </div>
+          <div class="match-score-wrap">
+            <div class="match-score">${m.score || '—'}</div>
+            <div class="match-games">${m.games}</div>
+          </div>
+          <div class="match-pair-col right">
+            <span class="match-pair right ${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
+            ${eloBHtml}
+          </div>
+        </div>`;
+      body.appendChild(card);
+    });
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
 function switchPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -300,9 +420,9 @@ function renderRating() {
       <td>${ph}</td>
       <td><span class="pair-name">${row.pair}</span></td>
       <td class="elo-val">${Math.round(row.elo) || '—'}</td>
-      <td class="mono col-wins hide-sm">${row.wins}</td>
-      <td class="mono col-losses hide-sm">${row.losses}</td>
-      <td class="mono hide-sm">${row.matches}</td>
+      <td class="mono col-wins hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','wins')">${row.wins}</span></td>
+      <td class="mono col-losses hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','losses')">${row.losses}</span></td>
+      <td class="mono hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','all')">${row.matches}</span></td>
       <td class="hide-sm">
         <div class="wr-wrap">
           <div class="wr-bar"><div class="wr-fill" style="width:${wr}%"></div></div>
@@ -383,6 +503,7 @@ async function loadMatches() {
     }
 
     const list = document.getElementById('matches-list');
+    matchesData = [];
     [...matches].reverse().forEach(row => {
       const c       = row.c || [];
       const num_    = num(c[0]?.v);
@@ -394,6 +515,7 @@ async function loadMatches() {
       const winner  = String(c[6]?.v || '').trim();
       const eloA    = num(c[7]?.v);
       const eloB    = num(c[8]?.v);
+      matchesData.push({ num: num_, date, pairA, pairB, score, games, winner, eloA, eloB });
 
       const aWon = winner === pairA;
       const bWon = winner === pairB;

@@ -192,6 +192,32 @@ td:first-child { text-align: center; padding-left: 12px; }
 .modal-body .match-card:first-child { margin-top: 0; }
 .modal-empty { padding: 3rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); }
 
+/* ABOUT PAGE */
+.about-wrap { padding: 2.5rem 1.5rem 4rem; max-width: 720px; }
+.about-hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1; margin-bottom: 0.5rem;
+}
+.about-hero-title span { color: var(--accent); }
+.about-desc { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 2rem; max-width: 540px; }
+.about-video { position: relative; padding-top: 56.25%; width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 2rem; }
+.about-video iframe { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
+.about-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.about-btn {
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; padding: 12px 24px; border-radius: 4px;
+  cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block;
+}
+.about-btn-primary {
+  background: var(--accent); color: var(--bg); border: none; font-weight: 500;
+}
+.about-btn-primary:hover { background: #d4f570; }
+.about-btn-secondary {
+  background: transparent; color: var(--text); border: 1px solid var(--border);
+}
+.about-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
 /* RULES PAGE */
 .rules-wrap { padding: 2rem 1.5rem 4rem; max-width: 680px; }
 .rules-section { margin-bottom: 2.5rem; }
@@ -248,6 +274,7 @@ td:first-child { text-align: center; padding-left: 12px; }
 <div class="container">
 
 <div class="nav">
+  <button class="nav-btn" onclick="switchPage('about', this)">🎾 О лиге</button>
   <button class="nav-btn active" onclick="switchPage('rating', this)">🏆 Рейтинг</button>
   <button class="nav-btn" onclick="switchPage('matches', this)">📋 Матчи</button>
   <button class="nav-btn" onclick="switchPage('rules', this)">📖 Регламент</button>
@@ -269,6 +296,22 @@ td:first-child { text-align: center; padding-left: 12px; }
   <div class="stat-cell"><div class="stat-val" id="s-matches">—</div><div class="stat-lbl">Матчей</div></div>
   <div class="stat-cell"><div class="stat-val" id="s-leader-elo">—</div><div class="stat-lbl">Лучший ELO</div></div>
   <div class="stat-cell"><div class="stat-val" id="s-avg-elo">—</div><div class="stat-lbl">Средний ELO</div></div>
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="page-about" class="page">
+  <div class="about-wrap">
+    <div class="about-hero-title">Волгоградская<br><span>падел лига</span></div>
+    <p class="about-desc">Падел-лига для тех, кто хочет играть регулярно, прогрессировать и быть частью живого сообщества.</p>
+    <div class="about-video">
+      <iframe src="https://kinescope.io/embed/kNwkaPJnCTXHYjFbJnC4Sd" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen></iframe>
+    </div>
+    <div class="about-actions">
+      <a class="about-btn about-btn-primary" href="https://t.me/burtovoy" target="_blank">✉ Регистрация</a>
+      <button class="about-btn about-btn-secondary" onclick="switchPage('rating', document.querySelectorAll('.nav-btn')[1])">🏆 Участники</button>
+      <button class="about-btn about-btn-secondary" onclick="switchPage('rules', document.querySelectorAll('.nav-btn')[3])">📖 Регламент</button>
+    </div>
+  </div>
 </div>
 
 <!-- RATING PAGE -->
@@ -476,8 +519,10 @@ function switchPage(name, btn) {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
   } else if (name === 'matches') {
     el.innerHTML = '<span style="color:var(--accent)">Матчи</span>';
-  } else {
+  } else if (name === 'rules') {
     el.innerHTML = '<span style="color:var(--accent)">Регламент</span>';
+  } else {
+    el.innerHTML = '<span style="color:var(--accent)">О лиге</span>';
   }
 }
 

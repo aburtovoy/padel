@@ -433,10 +433,7 @@ function renderRating() {
   });
 }
 
-/* ── ELO: фиксированный ±20 за матч ── */
-const ELO_DELTA = 20;
-
-/* ── РЕЙТИНГ (считается из «Команды» + история «Матчи») ── */
+/* ── РЕЙТИНГ (стартовый ELO из «Команды» + суммируем дельты из «Матчи») ── */
 async function loadRating() {
   document.getElementById('rating-state').style.display = '';
   document.getElementById('rating-state').innerHTML = '<div class="spinner"></div>Загружаем рейтинг...';
@@ -448,7 +445,7 @@ async function loadRating() {
       fetchSheet('Матчи'),
     ]);
 
-    // --- Стартовый ELO из листа «Команды» (колонка D = index 3) ---
+    // --- Стартовый ELO из «Команды» (col A = пара, col D = стартовый ELO) ---
     const eloMap    = {};
     const winsMap   = {};
     const lossesMap = {};
@@ -456,7 +453,7 @@ async function loadRating() {
     teamRows.forEach(row => {
       const c    = row.c || [];
       const pair = String(c[0]?.v || '').trim();
-      const elo  = num(c[3]?.f ?? c[3]?.v);  // колонка D — Стартовый ELO
+      const elo  = num(c[3]?.f ?? c[3]?.v);
       if (pair && pair.includes('/')) {
         eloMap[pair]    = elo || 1000;
         winsMap[pair]   = 0;
@@ -464,36 +461,32 @@ async function loadRating() {
       }
     });
 
-    // --- Матчи в хронологическом порядке (по номеру) ---
-    const matches = matchRows
+    // --- Суммируем дельты ELO из каждого сыгранного матча ---
+    // col C = пара А, col D = пара Б, col G = победитель, col H = ELO Δ А, col I = ELO Δ Б
+    matchRows
       .filter(r => {
         const c = r.c || [];
         return num(c[0]?.v) > 0 && c[2]?.v && c[3]?.v && String(c[2].v).includes('/');
       })
-      .sort((a, b) => num(a.c?.[0]?.v) - num(b.c?.[0]?.v));
+      .forEach(row => {
+        const c      = row.c || [];
+        const pairA  = String(c[2]?.v || '').trim();
+        const pairB  = String(c[3]?.v || '').trim();
+        const winner = String(c[6]?.v || '').trim();
+        const deltaA = num(c[7]?.v);  // ELO Δ А
+        const deltaB = num(c[8]?.v);  // ELO Δ Б
 
-    matches.forEach(row => {
-      const c      = row.c || [];
-      const pairA  = String(c[2]?.v || '').trim();
-      const pairB  = String(c[3]?.v || '').trim();
-      const winner = String(c[6]?.v || '').trim();
-      if (!pairA || !pairB) return;
+        if (!pairA || !pairB) return;
 
-      if (!(pairA in eloMap)) { eloMap[pairA] = 1000; winsMap[pairA] = 0; lossesMap[pairA] = 0; }
-      if (!(pairB in eloMap)) { eloMap[pairB] = 1000; winsMap[pairB] = 0; lossesMap[pairB] = 0; }
+        if (!(pairA in eloMap)) { eloMap[pairA] = 1000; winsMap[pairA] = 0; lossesMap[pairA] = 0; }
+        if (!(pairB in eloMap)) { eloMap[pairB] = 1000; winsMap[pairB] = 0; lossesMap[pairB] = 0; }
 
-      if (winner === pairA) {
-        eloMap[pairA] += ELO_DELTA;
-        eloMap[pairB] -= ELO_DELTA;
-        winsMap[pairA]++;
-        lossesMap[pairB]++;
-      } else if (winner === pairB) {
-        eloMap[pairB] += ELO_DELTA;
-        eloMap[pairA] -= ELO_DELTA;
-        winsMap[pairB]++;
-        lossesMap[pairA]++;
-      }
-    });
+        eloMap[pairA] += deltaA;
+        eloMap[pairB] += deltaB;
+
+        if (winner === pairA)      { winsMap[pairA]++; lossesMap[pairB]++; }
+        else if (winner === pairB) { winsMap[pairB]++; lossesMap[pairA]++; }
+      });
 
     // --- Итоговый рейтинг ---
     ratingData = Object.keys(eloMap).map(pair => ({

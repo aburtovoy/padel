@@ -186,6 +186,41 @@ td:first-child { text-align: center; padding-left: 12px; }
 .modal-body .match-card:first-child { margin-top: 0; }
 .modal-empty { padding: 3rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); }
 
+/* RULES PAGE */
+.rules-wrap { padding: 2rem 1.5rem 4rem; max-width: 680px; }
+.rules-section { margin-bottom: 2.5rem; }
+.rules-section h2 {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent);
+  letter-spacing: 0.04em; margin-bottom: 1rem; padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.rules-section h3 {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted); margin: 1.2rem 0 0.5rem;
+}
+.rules-section p { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 0.6rem; }
+.rules-section ul { list-style: none; padding: 0; }
+.rules-section ul li {
+  font-size: 14px; line-height: 1.7; color: var(--text);
+  padding: 4px 0 4px 1.2rem; position: relative;
+}
+.rules-section ul li::before { content: '—'; position: absolute; left: 0; color: var(--muted); }
+.rules-highlight {
+  background: var(--accent-dim); border-left: 3px solid var(--accent);
+  padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 1rem 0;
+  font-size: 14px; line-height: 1.7;
+}
+.rules-penalty {
+  background: var(--red-dim); border-left: 3px solid var(--red);
+  padding: 12px 16px; border-radius: 0 4px 4px 0; margin: 1rem 0;
+  font-size: 14px; line-height: 1.7;
+}
+.rules-tag {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  padding: 2px 7px; border-radius: 3px; letter-spacing: 0.04em; margin-right: 4px;
+  background: var(--accent-dim); color: var(--accent);
+}
+
 /* MOBILE */
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -209,6 +244,7 @@ td:first-child { text-align: center; padding-left: 12px; }
 <div class="nav">
   <button class="nav-btn active" onclick="switchPage('rating', this)">🏆 Рейтинг</button>
   <button class="nav-btn" onclick="switchPage('matches', this)">📋 Матчи</button>
+  <button class="nav-btn" onclick="switchPage('rules', this)">📖 Регламент</button>
 </div>
 
 <div class="header">
@@ -251,6 +287,88 @@ td:first-child { text-align: center; padding-left: 12px; }
   <div class="matches-wrap">
     <div id="matches-state" class="state"><div class="spinner"></div>Загружаем матчи...</div>
     <div id="matches-list"></div>
+  </div>
+</div>
+
+<!-- RULES PAGE -->
+<div id="page-rules" class="page">
+  <div class="rules-wrap">
+
+    <div class="rules-section">
+      <h2>О лиге</h2>
+      <p>Падел-лига для тех, кто хочет играть регулярно, прогрессировать и быть частью живого сообщества. Лига не привязана ни к одному клубу — играем там, где удобно участникам.</p>
+      <h3>Клубы</h3>
+      <ul>
+        <li>Arena</li>
+        <li>Selectory</li>
+        <li>Locos</li>
+      </ul>
+    </div>
+
+    <div class="rules-section">
+      <h2>Сезоны</h2>
+      <ul>
+        <li>Сезон длится <strong>3 месяца</strong></li>
+        <li>Лига играется <strong>парами с постоянным партнёром</strong></li>
+        <li>Состав пары фиксируется на весь сезон, замена партнёра <strong>запрещена</strong></li>
+        <li>Все пары находятся в <strong>единой рейтинговой таблице</strong></li>
+      </ul>
+    </div>
+
+    <div class="rules-section">
+      <h2>Регистрация команды</h2>
+      <p>Новые пары могут присоединиться в любой момент сезона при наличии свободных мест. При регистрации указывается:</p>
+      <ul>
+        <li><span class="rules-tag">1</span> Режим активности: <strong>Стандарт</strong> (~1 матч в неделю) или <strong>Активный</strong> (до 2 матчей в неделю)</li>
+        <li><span class="rules-tag">2</span> Капитан команды</li>
+        <li><span class="rules-tag">3</span> Удобные временные слоты</li>
+        <li><span class="rules-tag">4</span> Список клубов и их приоритет</li>
+      </ul>
+    </div>
+
+    <div class="rules-section">
+      <h2>Рейтинг</h2>
+      <p>Результат каждого матча влияет на рейтинг. Учитывается не только факт победы, но и счёт.</p>
+      <h3>Назначение матчей</h3>
+      <ul>
+        <li><strong>Рейтинг</strong> — соперник в диапазоне ±5 позиций (для топ-3 и нижних-3 диапазон расширяется)</li>
+        <li><strong>История встреч</strong> — не чаще 1 раза за 6 недель</li>
+        <li><strong>Доступность</strong> — учитываются ваши временные предпочтения</li>
+      </ul>
+      <div class="rules-highlight">Чем шире ваш диапазон доступности — тем проще подобрать соперника.</div>
+    </div>
+
+    <div class="rules-section">
+      <h2>Отказ от матча</h2>
+      <div class="rules-penalty">
+        <strong>Отказ = техническое поражение 0:2</strong><br>
+        Отказавшаяся пара: −15 рейтинга · Соперник: +10 рейтинга<br>
+        Максимум 2 отказа за сезон
+      </div>
+    </div>
+
+    <div class="rules-section">
+      <h2>Корт</h2>
+      <p>Лига не участвует в бронировании корта. Ответственность за оплату, перенос и отмену лежит на участниках.</p>
+      <p>Если одна из пар не приходит без предупреждения — она компенсирует стоимость корта стороне, оформившей бронь.</p>
+    </div>
+
+    <div class="rules-section">
+      <h2>Пауза</h2>
+      <p>Участники могут брать паузу от матчей без потери рейтинга — не более <strong>3 недель за сезон</strong>.</p>
+    </div>
+
+    <div class="rules-section">
+      <h2>Финал сезона</h2>
+      <ul>
+        <li>Участвуют <strong>топ-8 пар</strong> по рейтингу за неделю до финала</li>
+        <li>Условие участия: минимум <strong>8 сыгранных матчей</strong> за сезон</li>
+        <li>Если кто-то из топ-8 не набрал 8 матчей — его место занимает следующая пара</li>
+        <li>Формат: <strong>плей-офф</strong></li>
+      </ul>
+      <div class="rules-highlight">Борьба идёт не только за финал — каждый матч влияет на общий рейтинг и стартовые позиции в следующем сезоне.</div>
+    </div>
+
   </div>
 </div>
 
@@ -349,8 +467,10 @@ function switchPage(name, btn) {
   const el = document.getElementById('page-subtitle');
   if (name === 'rating') {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
-  } else {
+  } else if (name === 'matches') {
     el.innerHTML = '<span style="color:var(--accent)">Матчи</span>';
+  } else {
+    el.innerHTML = '<span style="color:var(--accent)">Регламент</span>';
   }
 }
 

@@ -47,7 +47,7 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 }
 .header-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 4vw, 2.4rem); line-height: 1; }
 .header-logo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
-.elo-delta { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; position: absolute; top: -2px; left: calc(100% + 2px); white-space: nowrap; }
+.elo-delta { font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 500; display: block; line-height: 1; margin-bottom: 1px; }
 .elo-delta.up { color: var(--green); }
 .elo-delta.dn { color: var(--red); }
 .header-title span { color: var(--accent); }
@@ -106,7 +106,7 @@ td:first-child { text-align: center; padding-left: 12px; }
 .pn { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
 .pair-name { font-size: 15px; font-weight: 500; }
 .elo-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; color: var(--accent); text-align: right; }
-.elo-cell { position: relative; display: inline-block; }
+.elo-cell { display: flex; flex-direction: column; align-items: flex-end; }
 .mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right; }
 .col-wins { color: var(--green); } .col-losses { color: var(--red); }
 
@@ -320,8 +320,6 @@ td:first-child { text-align: center; padding-left: 12px; }
     </div>
     <div class="about-actions">
       <a class="about-btn about-btn-primary" href="https://t.me/burtovoy" target="_blank">✉ Регистрация</a>
-      <button class="about-btn about-btn-secondary" onclick="switchPage('rating', document.querySelectorAll('.nav-btn')[1])">🏆 Участники / Рейтинг</button>
-      <button class="about-btn about-btn-secondary" onclick="switchPage('rules', document.querySelectorAll('.nav-btn')[3])">📖 Регламент</button>
     </div>
   </div>
 </div>

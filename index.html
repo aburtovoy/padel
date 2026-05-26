@@ -274,8 +274,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 <div class="container">
 
 <div class="nav">
-  <button class="nav-btn" onclick="switchPage('about', this)">🎾 О лиге</button>
-  <button class="nav-btn active" onclick="switchPage('rating', this)">🏆 Рейтинг</button>
+  <button class="nav-btn active" onclick="switchPage('about', this)">🎾 О лиге</button>
+  <button class="nav-btn" onclick="switchPage('rating', this)">🏆 Рейтинг</button>
   <button class="nav-btn" onclick="switchPage('matches', this)">📋 Матчи</button>
   <button class="nav-btn" onclick="switchPage('rules', this)">📖 Регламент</button>
 </div>
@@ -291,7 +291,7 @@ td:first-child { text-align: center; padding-left: 12px; }
   </div>
 </div>
 
-<div class="stats-row">
+<div class="stats-row" id="stats-row" style="display:none">
   <div class="stat-cell"><div class="stat-val" id="s-pairs">—</div><div class="stat-lbl">Пар</div></div>
   <div class="stat-cell"><div class="stat-val" id="s-matches">—</div><div class="stat-lbl">Матчей</div></div>
   <div class="stat-cell"><div class="stat-val" id="s-leader-elo">—</div><div class="stat-lbl">Лучший ELO</div></div>
@@ -299,9 +299,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 </div>
 
 <!-- ABOUT PAGE -->
-<div id="page-about" class="page">
+<div id="page-about" class="page active">
   <div class="about-wrap">
-    <div class="about-hero-title">Волгоградская<br><span>падел лига</span></div>
     <p class="about-desc">Падел-лига для тех, кто хочет играть регулярно, прогрессировать и быть частью живого сообщества.</p>
     <div class="about-video">
       
@@ -309,14 +308,14 @@ td:first-child { text-align: center; padding-left: 12px; }
     </div>
     <div class="about-actions">
       <a class="about-btn about-btn-primary" href="https://t.me/burtovoy" target="_blank">✉ Регистрация</a>
-      <button class="about-btn about-btn-secondary" onclick="switchPage('rating', document.querySelectorAll('.nav-btn')[1])">🏆 Участники</button>
+      <button class="about-btn about-btn-secondary" onclick="switchPage('rating', document.querySelectorAll('.nav-btn')[1])">🏆 Участники / Рейтинг</button>
       <button class="about-btn about-btn-secondary" onclick="switchPage('rules', document.querySelectorAll('.nav-btn')[3])">📖 Регламент</button>
     </div>
   </div>
 </div>
 
 <!-- RATING PAGE -->
-<div id="page-rating" class="page active">
+<div id="page-rating" class="page">
   <div class="table-wrap">
     <div id="rating-state" class="state"><div class="spinner"></div>Загружаем рейтинг...</div>
     <table id="rating-table" style="display:none">
@@ -515,6 +514,8 @@ function switchPage(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
+  const sr = document.getElementById('stats-row');
+  sr.style.display = name === 'rating' ? '' : 'none';
   const el = document.getElementById('page-subtitle');
   if (name === 'rating') {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
@@ -523,7 +524,7 @@ function switchPage(name, btn) {
   } else if (name === 'rules') {
     el.innerHTML = '<span style="color:var(--accent)">Регламент</span>';
   } else {
-    el.innerHTML = '<span style="color:var(--accent)">О лиге</span>';
+    el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
   }
 }
 

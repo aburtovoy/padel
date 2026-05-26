@@ -29,12 +29,12 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 .container { max-width: 900px; margin: 0 auto; }
 
 /* NAV */
-.nav { display: flex; border-bottom: 1px solid var(--border); }
+.nav { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
 .nav-btn {
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
-  text-transform: uppercase; padding: 1rem 1.5rem; background: none; border: none;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 1rem 1rem; background: none; border: none;
   color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
-  transition: all 0.2s; margin-bottom: -1px;
+  transition: all 0.2s; margin-bottom: -1px; white-space: nowrap; flex: 1;
 }
 .nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 .nav-btn:hover:not(.active) { color: var(--text); }
@@ -254,18 +254,30 @@ td:first-child { text-align: center; padding-left: 12px; }
 }
 
 /* MOBILE */
+.th-short { display: none; }
+.th-full  { display: inline; }
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .header { padding: 1.5rem 1rem 1.2rem; }
-  .table-wrap, .matches-wrap { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .table-wrap, .matches-wrap { padding-left: 0.5rem; padding-right: 0.5rem; }
   .hide-sm { display: none; }
-  table { min-width: 0; }
-  th, td { padding-left: 6px; padding-right: 6px; font-size: 13px; }
-  .pair-name { font-size: 13px; }
-  .elo-val { font-size: 1.1rem; }
+  table { min-width: 0; width: 100%; table-layout: fixed; }
+  th, td { padding-left: 4px; padding-right: 4px; font-size: 12px; }
+  th:nth-child(2), td:nth-child(2) { width: 38%; }
+  th:nth-child(1), td:nth-child(1) { width: 28px; text-align: center; }
+  th:nth-child(3), td:nth-child(3) { width: 15%; }
+  th:nth-child(4), td:nth-child(4),
+  th:nth-child(5), td:nth-child(5),
+  th:nth-child(6), td:nth-child(6) { width: 10%; text-align: center; }
+  .pair-name { font-size: 12px; }
+  .elo-val { font-size: 1rem; }
+  .elo-delta { font-size: 9px; }
+  .th-short { display: inline; }
+  .th-full  { display: none; }
   .match-body { gap: 0.4rem; padding: 12px 10px; }
   .match-pair { font-size: 12px; }
   .match-score { font-size: 1.3rem; }
+  .nav-btn { font-size: 10px; padding: 0.9rem 0.5rem; letter-spacing: 0.02em; }
 }
 </style>
 </head>
@@ -322,9 +334,9 @@ td:first-child { text-align: center; padding-left: 12px; }
       <thead><tr>
         <th>#</th><th>Пара</th>
         <th class="r">ELO</th>
-        <th class="r hide-sm sortable" data-col="wins"    onclick="sortBy('wins')">Победы</th>
-        <th class="r hide-sm sortable" data-col="losses"  onclick="sortBy('losses')">Поражения</th>
-        <th class="r hide-sm sortable" data-col="matches" onclick="sortBy('matches')">Матчи</th>
+        <th class="r sortable" data-col="wins"    onclick="sortBy('wins')"><span class="th-full">Победы</span><span class="th-short">В</span></th>
+        <th class="r sortable" data-col="losses"  onclick="sortBy('losses')"><span class="th-full">Поражения</span><span class="th-short">П</span></th>
+        <th class="r sortable" data-col="matches" onclick="sortBy('matches')"><span class="th-full">Матчи</span><span class="th-short">М</span></th>
         <th class="r hide-sm">% побед</th>
       </tr></thead>
       <tbody id="rating-tbody"></tbody>
@@ -598,9 +610,9 @@ function renderRating() {
       <td>${ph}</td>
       <td><span class="pair-name">${row.pair}</span></td>
       <td class="elo-val" style="overflow:visible"><div class="elo-cell">${Math.round(row.elo) || '—'}${deltaHtml}</div></td>
-      <td class="mono col-wins hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','wins')">${row.wins}</span></td>
-      <td class="mono col-losses hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','losses')">${row.losses}</span></td>
-      <td class="mono hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','all')">${row.matches}</span></td>
+      <td class="mono col-wins"><span class="stat-clickable" onclick="openModal('${row.pair}','wins')">${row.wins}</span></td>
+      <td class="mono col-losses"><span class="stat-clickable" onclick="openModal('${row.pair}','losses')">${row.losses}</span></td>
+      <td class="mono"><span class="stat-clickable" onclick="openModal('${row.pair}','all')">${row.matches}</span></td>
       <td class="hide-sm">
         <div class="wr-wrap">
           <div class="wr-bar"><div class="wr-fill" style="width:${wr}%"></div></div>

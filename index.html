@@ -47,7 +47,7 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 }
 .header-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 4vw, 2.4rem); line-height: 1; }
 .header-logo { width: 52px; height: 52px; object-fit: contain; flex-shrink: 0; }
-.elo-delta { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; min-width: 28px; text-align: left; }
+.elo-delta { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; position: absolute; top: -2px; left: calc(100% + 2px); white-space: nowrap; }
 .elo-delta.up { color: var(--green); }
 .elo-delta.dn { color: var(--red); }
 .header-title span { color: var(--accent); }
@@ -105,8 +105,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 .p1 { color: var(--gold); } .p2 { color: var(--silver); } .p3 { color: var(--bronze); }
 .pn { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
 .pair-name { font-size: 15px; font-weight: 500; }
-.elo-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; color: var(--accent); text-align: right; white-space: nowrap; }
-.elo-cell { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+.elo-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; color: var(--accent); text-align: right; }
+.elo-cell { position: relative; display: inline-block; }
 .mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-align: right; }
 .col-wins { color: var(--green); } .col-losses { color: var(--red); }
 
@@ -550,7 +550,7 @@ function renderRating() {
     tr.innerHTML = `
       <td>${ph}</td>
       <td><span class="pair-name">${row.pair}</span></td>
-      <td class="elo-val"><div class="elo-cell"><span>${Math.round(row.elo) || '—'}</span>${deltaHtml}</div></td>
+      <td class="elo-val" style="overflow:visible"><div class="elo-cell">${Math.round(row.elo) || '—'}${deltaHtml}</div></td>
       <td class="mono col-wins hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','wins')">${row.wins}</span></td>
       <td class="mono col-losses hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','losses')">${row.losses}</span></td>
       <td class="mono hide-sm"><span class="stat-clickable" onclick="openModal('${row.pair}','all')">${row.matches}</span></td>

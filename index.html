@@ -44,7 +44,7 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
   border-bottom: 1px solid var(--border);
   display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
 }
-.header-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 0.9; }
+.header-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 4vw, 2.4rem); line-height: 1; }
 .header-title span { color: var(--accent); }
 .header-right { text-align: right; }
 .last-update { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
@@ -170,7 +170,7 @@ td:first-child { text-align: center; padding-left: 12px; }
 
 <div class="header">
   <div>
-    <div class="header-title">Волгоградская<br><span id="page-subtitle">падел лига</span></div>
+    <div class="header-title" id="page-subtitle">Волгоградская<br><span style="color:var(--accent)">падел лига</span></div>
   </div>
   <div class="header-right">
     <div class="last-update"><strong id="last-update">—</strong>обновлено</div>
@@ -182,7 +182,7 @@ td:first-child { text-align: center; padding-left: 12px; }
   <div class="stat-cell"><div class="stat-val" id="s-pairs">—</div><div class="stat-lbl">Пар</div></div>
   <div class="stat-cell"><div class="stat-val" id="s-matches">—</div><div class="stat-lbl">Матчей</div></div>
   <div class="stat-cell"><div class="stat-val" id="s-leader-elo">—</div><div class="stat-lbl">Лучший ELO</div></div>
-  <div class="stat-cell"><div class="stat-val" id="s-leader">—</div><div class="stat-lbl">Лидер</div></div>
+  <div class="stat-cell"><div class="stat-val" id="s-avg-elo">—</div><div class="stat-lbl">Средний ELO</div></div>
 </div>
 
 <!-- RATING PAGE -->
@@ -226,7 +226,12 @@ function switchPage(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   btn.classList.add('active');
-  document.getElementById('page-subtitle').textContent = name === 'rating' ? 'Рейтинг' : 'Матчи';
+  const el = document.getElementById('page-subtitle');
+  if (name === 'rating') {
+    el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
+  } else {
+    el.innerHTML = '<span style="color:var(--accent)">Матчи</span>';
+  }
 }
 
 function num(v) {
@@ -323,7 +328,7 @@ async function loadRating() {
 
     data.sort((a, b) => num(a.c?.[0]?.v) - num(b.c?.[0]?.v));
 
-    let maxElo = 0, leader = '', totalMatches = 0;
+    let maxElo = 0, totalElo = 0, totalMatches = 0;
 
     ratingData = data.map((row, idx) => {
       const c       = row.c || [];
@@ -335,7 +340,8 @@ async function loadRating() {
       const matches = num(c[5]?.v);
 
       totalMatches += matches;
-      if (elo > maxElo) { maxElo = elo; leader = pair.split('/')[0]; }
+      if (elo > maxElo) { maxElo = elo; }
+      if (elo > 0) totalElo += elo;
 
       return { place, pair, elo, wins, losses, matches };
     });
@@ -343,7 +349,8 @@ async function loadRating() {
     document.getElementById('s-pairs').textContent      = ratingData.length;
     document.getElementById('s-matches').textContent    = Math.round(totalMatches / 2);
     document.getElementById('s-leader-elo').textContent = Math.round(maxElo);
-    document.getElementById('s-leader').textContent     = leader || '—';
+    const avgElo = ratingData.length > 0 ? Math.round(totalElo / ratingData.length) : 0;
+    document.getElementById('s-avg-elo').textContent    = avgElo || '—';
 
     document.getElementById('rating-state').style.display = 'none';
     document.getElementById('rating-table').style.display = '';

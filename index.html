@@ -433,33 +433,30 @@ function renderRating() {
   });
 }
 
-/* ── ELO ── */
-const ELO_K = 32;
-function eloExpected(a, b) { return 1 / (1 + Math.pow(10, (b - a) / 400)); }
-function eloUpdate(rating, expected, score) { return rating + ELO_K * (score - expected); }
+/* ── ELO: фиксированный ±20 за матч ── */
+const ELO_DELTA = 20;
 
-/* ── РЕЙТИНГ (считается из стартового рейтинга + история матчей) ── */
+/* ── РЕЙТИНГ (считается из «Команды» + история «Матчи») ── */
 async function loadRating() {
   document.getElementById('rating-state').style.display = '';
   document.getElementById('rating-state').innerHTML = '<div class="spinner"></div>Загружаем рейтинг...';
   document.getElementById('rating-table').style.display = 'none';
 
   try {
-    // Загружаем оба листа параллельно
-    const [startRows, matchRows] = await Promise.all([
-      fetchSheet('Стартовый рейтинг'),
+    const [teamRows, matchRows] = await Promise.all([
+      fetchSheet('Команды'),
       fetchSheet('Матчи'),
     ]);
 
-    // --- Стартовый рейтинг: пара → ELO ---
-    const eloMap = {};   // pair → текущий ELO
-    const winsMap = {};
+    // --- Стартовый ELO из листа «Команды» (колонка D = index 3) ---
+    const eloMap    = {};
+    const winsMap   = {};
     const lossesMap = {};
 
-    startRows.forEach(row => {
+    teamRows.forEach(row => {
       const c    = row.c || [];
       const pair = String(c[0]?.v || '').trim();
-      const elo  = num(c[1]?.f ?? c[1]?.v);
+      const elo  = num(c[3]?.f ?? c[3]?.v);  // колонка D — Стартовый ELO
       if (pair && pair.includes('/')) {
         eloMap[pair]    = elo || 1000;
         winsMap[pair]   = 0;
@@ -467,7 +464,7 @@ async function loadRating() {
       }
     });
 
-    // --- Матчи в хронологическом порядке ---
+    // --- Матчи в хронологическом порядке (по номеру) ---
     const matches = matchRows
       .filter(r => {
         const c = r.c || [];
@@ -480,33 +477,32 @@ async function loadRating() {
       const pairA  = String(c[2]?.v || '').trim();
       const pairB  = String(c[3]?.v || '').trim();
       const winner = String(c[6]?.v || '').trim();
+      if (!pairA || !pairB) return;
 
-      // Добавляем пару если её нет в стартовом рейтинге
       if (!(pairA in eloMap)) { eloMap[pairA] = 1000; winsMap[pairA] = 0; lossesMap[pairA] = 0; }
       if (!(pairB in eloMap)) { eloMap[pairB] = 1000; winsMap[pairB] = 0; lossesMap[pairB] = 0; }
 
-      const rA = eloMap[pairA];
-      const rB = eloMap[pairB];
-      const expA = eloExpected(rA, rB);
-      const expB = eloExpected(rB, rA);
-
-      const scoreA = winner === pairA ? 1 : winner === pairB ? 0 : 0.5;
-      const scoreB = 1 - scoreA;
-
-      eloMap[pairA] = eloUpdate(rA, expA, scoreA);
-      eloMap[pairB] = eloUpdate(rB, expB, scoreB);
-
-      if (scoreA === 1) { winsMap[pairA]++; lossesMap[pairB]++; }
-      else if (scoreB === 1) { winsMap[pairB]++; lossesMap[pairA]++; }
+      if (winner === pairA) {
+        eloMap[pairA] += ELO_DELTA;
+        eloMap[pairB] -= ELO_DELTA;
+        winsMap[pairA]++;
+        lossesMap[pairB]++;
+      } else if (winner === pairB) {
+        eloMap[pairB] += ELO_DELTA;
+        eloMap[pairA] -= ELO_DELTA;
+        winsMap[pairB]++;
+        lossesMap[pairA]++;
+      }
     });
 
-    // --- Собираем итоговый рейтинг ---
-    ratingData = Object.keys(eloMap).map(pair => {
-      const wins    = winsMap[pair]   || 0;
-      const losses  = lossesMap[pair] || 0;
-      const mcount  = wins + losses;
-      return { pair, elo: eloMap[pair], wins, losses, matches: mcount };
-    });
+    // --- Итоговый рейтинг ---
+    ratingData = Object.keys(eloMap).map(pair => ({
+      pair,
+      elo:     eloMap[pair],
+      wins:    winsMap[pair]   || 0,
+      losses:  lossesMap[pair] || 0,
+      matches: (winsMap[pair] || 0) + (lossesMap[pair] || 0),
+    }));
 
     ratingData.sort((a, b) => b.elo - a.elo);
     ratingData.forEach((r, i) => r.place = i + 1);
@@ -514,7 +510,7 @@ async function loadRating() {
     let maxElo = 0, totalElo = 0, totalMatches = 0;
     ratingData.forEach(r => {
       if (r.elo > maxElo) maxElo = r.elo;
-      totalElo    += r.elo;
+      totalElo     += r.elo;
       totalMatches += r.matches;
     });
 

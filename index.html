@@ -433,37 +433,89 @@ function renderRating() {
   });
 }
 
-/* ── РЕЙТИНГ ── */
+/* ── ELO ── */
+const ELO_K = 32;
+function eloExpected(a, b) { return 1 / (1 + Math.pow(10, (b - a) / 400)); }
+function eloUpdate(rating, expected, score) { return rating + ELO_K * (score - expected); }
+
+/* ── РЕЙТИНГ (считается из стартового рейтинга + история матчей) ── */
 async function loadRating() {
   document.getElementById('rating-state').style.display = '';
   document.getElementById('rating-state').innerHTML = '<div class="spinner"></div>Загружаем рейтинг...';
   document.getElementById('rating-table').style.display = 'none';
 
   try {
-    const rows = await fetchSheet('Рейтинг');
-    const data = rows.filter(r => {
-      const v = r.c?.[1]?.v;
-      return v && typeof v === 'string' && v.includes('/');
+    // Загружаем оба листа параллельно
+    const [startRows, matchRows] = await Promise.all([
+      fetchSheet('Стартовый рейтинг'),
+      fetchSheet('Матчи'),
+    ]);
+
+    // --- Стартовый рейтинг: пара → ELO ---
+    const eloMap = {};   // pair → текущий ELO
+    const winsMap = {};
+    const lossesMap = {};
+
+    startRows.forEach(row => {
+      const c    = row.c || [];
+      const pair = String(c[0]?.v || '').trim();
+      const elo  = num(c[1]?.f ?? c[1]?.v);
+      if (pair && pair.includes('/')) {
+        eloMap[pair]    = elo || 1000;
+        winsMap[pair]   = 0;
+        lossesMap[pair] = 0;
+      }
     });
 
-    data.sort((a, b) => num(a.c?.[0]?.v) - num(b.c?.[0]?.v));
+    // --- Матчи в хронологическом порядке ---
+    const matches = matchRows
+      .filter(r => {
+        const c = r.c || [];
+        return num(c[0]?.v) > 0 && c[2]?.v && c[3]?.v && String(c[2].v).includes('/');
+      })
+      .sort((a, b) => num(a.c?.[0]?.v) - num(b.c?.[0]?.v));
+
+    matches.forEach(row => {
+      const c      = row.c || [];
+      const pairA  = String(c[2]?.v || '').trim();
+      const pairB  = String(c[3]?.v || '').trim();
+      const winner = String(c[6]?.v || '').trim();
+
+      // Добавляем пару если её нет в стартовом рейтинге
+      if (!(pairA in eloMap)) { eloMap[pairA] = 1000; winsMap[pairA] = 0; lossesMap[pairA] = 0; }
+      if (!(pairB in eloMap)) { eloMap[pairB] = 1000; winsMap[pairB] = 0; lossesMap[pairB] = 0; }
+
+      const rA = eloMap[pairA];
+      const rB = eloMap[pairB];
+      const expA = eloExpected(rA, rB);
+      const expB = eloExpected(rB, rA);
+
+      const scoreA = winner === pairA ? 1 : winner === pairB ? 0 : 0.5;
+      const scoreB = 1 - scoreA;
+
+      eloMap[pairA] = eloUpdate(rA, expA, scoreA);
+      eloMap[pairB] = eloUpdate(rB, expB, scoreB);
+
+      if (scoreA === 1) { winsMap[pairA]++; lossesMap[pairB]++; }
+      else if (scoreB === 1) { winsMap[pairB]++; lossesMap[pairA]++; }
+    });
+
+    // --- Собираем итоговый рейтинг ---
+    ratingData = Object.keys(eloMap).map(pair => {
+      const wins    = winsMap[pair]   || 0;
+      const losses  = lossesMap[pair] || 0;
+      const mcount  = wins + losses;
+      return { pair, elo: eloMap[pair], wins, losses, matches: mcount };
+    });
+
+    ratingData.sort((a, b) => b.elo - a.elo);
+    ratingData.forEach((r, i) => r.place = i + 1);
 
     let maxElo = 0, totalElo = 0, totalMatches = 0;
-
-    ratingData = data.map((row, idx) => {
-      const c       = row.c || [];
-      const place   = num(c[0]?.v) || (idx + 1);
-      const pair    = String(c[1]?.v || '').trim();
-      const elo     = num(c[2]?.f ?? c[2]?.v);
-      const wins    = num(c[3]?.v);
-      const losses  = num(c[4]?.v);
-      const matches = num(c[5]?.v);
-
-      totalMatches += matches;
-      if (elo > maxElo) { maxElo = elo; }
-      if (elo > 0) totalElo += elo;
-
-      return { place, pair, elo, wins, losses, matches };
+    ratingData.forEach(r => {
+      if (r.elo > maxElo) maxElo = r.elo;
+      totalElo    += r.elo;
+      totalMatches += r.matches;
     });
 
     document.getElementById('s-pairs').textContent      = ratingData.length;

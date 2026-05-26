@@ -24,6 +24,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif; min-height: 100vh; }
 
+/* CONTAINER — фиксированная ширина */
+.container { max-width: 900px; margin: 0 auto; }
+
 /* NAV */
 .nav { display: flex; border-bottom: 1px solid var(--border); }
 .nav-btn {
@@ -37,11 +40,11 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 
 /* HEADER */
 .header {
-  padding: 2.5rem 2rem 2rem;
+  padding: 2.5rem 1.5rem 2rem;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
 }
-.header-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem, 7vw, 5rem); line-height: 0.9; }
+.header-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 6vw, 4rem); line-height: 0.9; }
 .header-title span { color: var(--accent); }
 .header-right { text-align: right; }
 .last-update { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
@@ -55,7 +58,7 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 
 /* STATS */
 .stats-row {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
 }
 .stat-cell { background: var(--bg); padding: 1.2rem 1.5rem; }
@@ -67,8 +70,8 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 .page.active { display: block; }
 
 /* RATING TABLE */
-.table-wrap { padding: 0 2rem 4rem; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; margin-top: 2rem; min-width: 520px; }
+.table-wrap { padding: 0 1.5rem 4rem; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
 thead tr { border-bottom: 1px solid var(--border); }
 th {
   font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
@@ -77,6 +80,14 @@ th {
 }
 th:first-child { width: 48px; text-align: center; padding-left: 12px; }
 th.r { text-align: right; }
+/* Кликабельные заголовки */
+th.sortable {
+  cursor: pointer; user-select: none;
+}
+th.sortable:hover { color: var(--text); }
+th.sortable.asc::after  { content: ' ↑'; color: var(--accent); }
+th.sortable.desc::after { content: ' ↓'; color: var(--accent); }
+
 tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; cursor: default; }
 tbody tr:hover { background: rgba(255,255,255,0.025); }
 tbody tr.top1 { background: rgba(245,200,66,0.06); }
@@ -98,13 +109,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 .wr-fill { height: 100%; background: var(--accent); border-radius: 2px; }
 .wr-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); min-width: 30px; text-align: right; }
 
-.badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.04em; }
-.b-active { background: var(--accent-dim); color: var(--accent); }
-.b-inactive { background: var(--red-dim); color: var(--red); }
-.b-other { background: rgba(255,255,255,0.06); color: var(--muted); }
-
 /* MATCHES */
-.matches-wrap { padding: 0 2rem 4rem; }
+.matches-wrap { padding: 0 1.5rem 4rem; }
 .match-card {
   border: 1px solid var(--border); border-radius: 6px;
   margin-top: 1rem; overflow: hidden;
@@ -114,8 +120,6 @@ td:first-child { text-align: center; padding-left: 12px; }
   padding: 10px 14px; background: var(--surface);
   font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted);
 }
-.match-num { color: var(--muted); }
-.match-date { }
 .match-body {
   display: grid; grid-template-columns: 1fr auto 1fr;
   align-items: center; gap: 1rem; padding: 16px 14px;
@@ -139,15 +143,25 @@ td:first-child { text-align: center; padding-left: 12px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .err-msg { color: var(--red); }
 
-@media (max-width: 600px) {
-  .header, .table-wrap, .matches-wrap { padding-left: 1rem; padding-right: 1rem; }
+/* MOBILE */
+@media (max-width: 640px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .header { padding: 1.5rem 1rem 1.2rem; }
+  .table-wrap, .matches-wrap { padding-left: 0.75rem; padding-right: 0.75rem; }
   .hide-sm { display: none; }
-  .match-body { grid-template-columns: 1fr auto 1fr; gap: 0.5rem; }
+  table { min-width: 0; }
+  th, td { padding-left: 6px; padding-right: 6px; font-size: 13px; }
+  .pair-name { font-size: 13px; }
+  .elo-val { font-size: 1.1rem; }
+  .match-body { gap: 0.4rem; padding: 12px 10px; }
   .match-pair { font-size: 12px; }
+  .match-score { font-size: 1.3rem; }
 }
 </style>
 </head>
 <body>
+
+<div class="container">
 
 <div class="nav">
   <button class="nav-btn active" onclick="switchPage('rating', this)">🏆 Рейтинг</button>
@@ -179,11 +193,10 @@ td:first-child { text-align: center; padding-left: 12px; }
       <thead><tr>
         <th>#</th><th>Пара</th>
         <th class="r">ELO</th>
-        <th class="r hide-sm">Победы</th>
-        <th class="r hide-sm">Поражения</th>
-        <th class="r hide-sm">Матчи</th>
+        <th class="r hide-sm sortable" data-col="wins"    onclick="sortBy('wins')">Победы</th>
+        <th class="r hide-sm sortable" data-col="losses"  onclick="sortBy('losses')">Поражения</th>
+        <th class="r hide-sm sortable" data-col="matches" onclick="sortBy('matches')">Матчи</th>
         <th class="r hide-sm">% побед</th>
-        <th class="r">Статус</th>
       </tr></thead>
       <tbody id="rating-tbody"></tbody>
     </table>
@@ -198,8 +211,15 @@ td:first-child { text-align: center; padding-left: 12px; }
   </div>
 </div>
 
+</div><!-- /container -->
+
 <script>
 const SHEET_ID = '1ckry8Tz1CDlTMvZ_Kh0wUtmKqkWLnNWsbOj82-cex7s';
+
+// Sorting state
+let ratingData = [];
+let sortCol = null;   // 'wins' | 'losses' | 'matches'
+let sortDir = 'desc'; // 'asc' | 'desc'
 
 function switchPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -230,6 +250,64 @@ async function loadAll() {
     new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) + ' ';
 }
 
+function sortBy(col) {
+  if (sortCol === col) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortCol = col;
+    sortDir = 'desc';
+  }
+  // Update header indicators
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('asc', 'desc');
+    if (th.dataset.col === col) th.classList.add(sortDir);
+  });
+  renderRating();
+}
+
+function renderRating() {
+  const sorted = [...ratingData];
+  if (sortCol) {
+    sorted.sort((a, b) => {
+      const av = a[sortCol], bv = b[sortCol];
+      return sortDir === 'desc' ? bv - av : av - bv;
+    });
+  }
+
+  const tbody = document.getElementById('rating-tbody');
+  tbody.innerHTML = '';
+
+  sorted.forEach((row, idx) => {
+    const place = sortCol ? (idx + 1) : row.place;
+    const wr = row.matches > 0 ? Math.round(row.wins / row.matches * 100) : 0;
+
+    let ph;
+    if (place===1) ph=`<span class="place-num p1">1</span>`;
+    else if (place===2) ph=`<span class="place-num p2">2</span>`;
+    else if (place===3) ph=`<span class="place-num p3">3</span>`;
+    else ph=`<span class="place-num pn">${place}</span>`;
+
+    const origPlace = row.place;
+    const rc = origPlace===1?'top1':origPlace===2?'top2':origPlace===3?'top3':'';
+    const tr = document.createElement('tr');
+    if (rc && !sortCol) tr.className = rc;
+    tr.innerHTML = `
+      <td>${ph}</td>
+      <td><span class="pair-name">${row.pair}</span></td>
+      <td class="elo-val">${Math.round(row.elo) || '—'}</td>
+      <td class="mono col-wins hide-sm">${row.wins}</td>
+      <td class="mono col-losses hide-sm">${row.losses}</td>
+      <td class="mono hide-sm">${row.matches}</td>
+      <td class="hide-sm">
+        <div class="wr-wrap">
+          <div class="wr-bar"><div class="wr-fill" style="width:${wr}%"></div></div>
+          <span class="wr-pct">${row.matches>0?wr+'%':'—'}</span>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
 /* ── РЕЙТИНГ ── */
 async function loadRating() {
   document.getElementById('rating-state').style.display = '';
@@ -238,7 +316,6 @@ async function loadRating() {
 
   try {
     const rows = await fetchSheet('Рейтинг');
-    // Пропускаем строку-заголовок ("🏆 РЕЙТИНГОВАЯ ТАБЛИЦА") и строку с именами колонок
     const data = rows.filter(r => {
       const v = r.c?.[1]?.v;
       return v && typeof v === 'string' && v.includes('/');
@@ -246,11 +323,9 @@ async function loadRating() {
 
     data.sort((a, b) => num(a.c?.[0]?.v) - num(b.c?.[0]?.v));
 
-    const tbody = document.getElementById('rating-tbody');
-    tbody.innerHTML = '';
     let maxElo = 0, leader = '', totalMatches = 0;
 
-    data.forEach((row, idx) => {
+    ratingData = data.map((row, idx) => {
       const c       = row.c || [];
       const place   = num(c[0]?.v) || (idx + 1);
       const pair    = String(c[1]?.v || '').trim();
@@ -258,50 +333,21 @@ async function loadRating() {
       const wins    = num(c[3]?.v);
       const losses  = num(c[4]?.v);
       const matches = num(c[5]?.v);
-      const status  = String(c[6]?.v || '').trim();
 
       totalMatches += matches;
       if (elo > maxElo) { maxElo = elo; leader = pair.split('/')[0]; }
 
-      const wr = matches > 0 ? Math.round(wins / matches * 100) : 0;
-      const sl = status.toLowerCase();
-      let bc = 'b-other', bt = status || '—';
-      if (sl.includes('актив')) bc = 'b-active';
-      else if (sl.includes('неакт')) bc = 'b-inactive';
-
-      let ph;
-      if (place===1) ph=`<span class="place-num p1">1</span>`;
-      else if (place===2) ph=`<span class="place-num p2">2</span>`;
-      else if (place===3) ph=`<span class="place-num p3">3</span>`;
-      else ph=`<span class="place-num pn">${place}</span>`;
-
-      const rc = place===1?'top1':place===2?'top2':place===3?'top3':'';
-      const tr = document.createElement('tr');
-      if (rc) tr.className = rc;
-      tr.innerHTML = `
-        <td>${ph}</td>
-        <td><span class="pair-name">${pair}</span></td>
-        <td class="elo-val">${Math.round(elo) || '—'}</td>
-        <td class="mono col-wins hide-sm">${wins}</td>
-        <td class="mono col-losses hide-sm">${losses}</td>
-        <td class="mono hide-sm">${matches}</td>
-        <td class="hide-sm">
-          <div class="wr-wrap">
-            <div class="wr-bar"><div class="wr-fill" style="width:${wr}%"></div></div>
-            <span class="wr-pct">${matches>0?wr+'%':'—'}</span>
-          </div>
-        </td>
-        <td style="text-align:right"><span class="badge ${bc}">${bt}</span></td>`;
-      tbody.appendChild(tr);
+      return { place, pair, elo, wins, losses, matches };
     });
 
-    document.getElementById('s-pairs').textContent     = data.length;
-    document.getElementById('s-matches').textContent   = Math.round(totalMatches / 2);
+    document.getElementById('s-pairs').textContent      = ratingData.length;
+    document.getElementById('s-matches').textContent    = Math.round(totalMatches / 2);
     document.getElementById('s-leader-elo').textContent = Math.round(maxElo);
-    document.getElementById('s-leader').textContent    = leader || '—';
+    document.getElementById('s-leader').textContent     = leader || '—';
 
     document.getElementById('rating-state').style.display = 'none';
     document.getElementById('rating-table').style.display = '';
+    renderRating();
 
   } catch(e) {
     document.getElementById('rating-state').innerHTML =
@@ -318,7 +364,6 @@ async function loadMatches() {
   try {
     const rows = await fetchSheet('Матчи');
 
-    // Фильтруем строки с реальными матчами: есть номер и дата и обе пары
     const matches = rows.filter(r => {
       const c = r.c || [];
       return num(c[0]?.v) > 0 && c[2]?.v && c[3]?.v && String(c[2].v).includes('/');
@@ -330,7 +375,6 @@ async function loadMatches() {
       return;
     }
 
-    // Показываем в обратном порядке (последние сверху)
     const list = document.getElementById('matches-list');
     [...matches].reverse().forEach(row => {
       const c       = row.c || [];
@@ -338,8 +382,8 @@ async function loadMatches() {
       const date    = c[1]?.f || c[1]?.v || '';
       const pairA   = String(c[2]?.v || '').trim();
       const pairB   = String(c[3]?.v || '').trim();
-      const score   = String(c[4]?.v || '').trim();   // 2:1
-      const games   = String(c[5]?.v || '').trim();   // 6:4, 3:6, 10:7
+      const score   = String(c[4]?.v || '').trim();
+      const games   = String(c[5]?.v || '').trim();
       const winner  = String(c[6]?.v || '').trim();
       const eloA    = num(c[7]?.v);
       const eloB    = num(c[8]?.v);

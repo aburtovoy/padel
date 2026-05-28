@@ -185,49 +185,52 @@ td:first-child { text-align: center; padding-left: 12px; }
 .modal-empty { padding: 3rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); }
 
 /* ABOUT PAGE */
-.about-wrap { padding: 2.5rem 1.5rem 4rem; max-width: 720px; }
-.about-hero-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2.2rem, 7vw, 4rem);
-  line-height: 1; margin-bottom: 0.5rem;
+.about-wrap { padding: 2.5rem 1.5rem 4rem; max-width: 680px; }
+.about-desc {
+  font-size: 17px; color: var(--text); line-height: 1.75; margin-bottom: 2rem;
+  max-width: 560px; font-weight: 400; letter-spacing: -0.01em;
 }
-.about-hero-title span { color: var(--accent); }
-.about-desc { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 2rem; max-width: 540px; }
-.about-video { position: relative; padding-top: 56.25%; width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 2rem; }
+.about-desc em { color: var(--accent); font-style: normal; }
+.about-video { position: relative; padding-top: 56.25%; width: 100%; border-radius: 6px; overflow: hidden; margin-bottom: 2rem; }
 .about-video iframe { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
-.about-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.about-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 3rem; }
 .about-btn {
   font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em;
   text-transform: uppercase; padding: 12px 24px; border-radius: 4px;
   cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block;
 }
-.about-btn-primary {
-  background: var(--accent); color: var(--bg); border: none; font-weight: 500;
-}
+.about-btn-primary { background: var(--accent); color: var(--bg); border: none; font-weight: 500; }
 .about-btn-primary:hover { background: #d4f570; }
-.about-btn-secondary {
-  background: transparent; color: var(--text); border: 1px solid var(--border);
-}
+.about-btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
 .about-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-.about-format { margin-top: 2.5rem; }
+/* FORMAT SECTION */
 .about-format-title {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 1.2rem;
 }
-.about-format-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-  background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+.about-format-list { display: flex; flex-direction: column; gap: 0; }
+.af-row {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: 1rem 0; border-bottom: 1px solid var(--border);
 }
-.af-card {
-  background: var(--bg); padding: 1.1rem 1rem;
+.af-row:first-child { border-top: 1px solid var(--border); }
+.af-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--border);
+  min-width: 2rem; line-height: 1; flex-shrink: 0; transition: color 0.2s;
 }
-.af-icon { font-size: 1.2rem; margin-bottom: 0.4rem; }
+.af-row:hover .af-num { color: var(--accent); }
+.af-body { flex: 1; }
 .af-label {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
-  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.3rem;
+  font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 0.2rem;
 }
-.af-val { font-size: 13px; color: var(--text); line-height: 1.5; }
+.af-val { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.af-tag {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--accent-dim); color: var(--accent);
+  padding: 2px 7px; border-radius: 2px; margin-left: 0.5rem; vertical-align: middle;
+}
 
 /* RULES PAGE */
 .rules-wrap { padding: 2rem 1.5rem 4rem; max-width: 680px; }
@@ -289,7 +292,6 @@ td:first-child { text-align: center; padding-left: 12px; }
   .match-pair { font-size: 12px; }
   .match-score { font-size: 1.3rem; }
   .nav-btn { font-size: 10px; padding: 0.9rem 0.5rem; letter-spacing: 0.02em; }
-  .about-format-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -321,9 +323,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 <!-- ABOUT PAGE -->
 <div id="page-about" class="page active">
   <div class="about-wrap">
-    <p class="about-desc">Падел-лига для тех, кто хочет играть регулярно, прогрессировать и быть частью живого сообщества.</p>
+    <p class="about-desc">Лига для тех, кто хочет играть <em>регулярно</em>, прогрессировать и быть частью живого сообщества. Не клубная — играем там, где удобно.</p>
     <div class="about-video">
-      
       <iframe src="https://kinescope.io/embed/9HXdfLRHbkvCBPcRGgD6mB" allow="autoplay; fullscreen; picture-in-picture; encrypted-media; gyroscope; accelerometer; clipboard-write; screen-wake-lock;" frameborder="0" allowfullscreen></iframe>
     </div>
     <div class="about-actions">
@@ -332,36 +333,48 @@ td:first-child { text-align: center; padding-left: 12px; }
 
     <div class="about-format">
       <div class="about-format-title">Как устроена лига</div>
-      <div class="about-format-grid">
-        <div class="af-card">
-          <div class="af-icon">📅</div>
-          <div class="af-label">Сезон</div>
-          <div class="af-val">3 месяца, пары с постоянным партнёром</div>
+      <div class="about-format-list">
+        <div class="af-row">
+          <div class="af-num">01</div>
+          <div class="af-body">
+            <div class="af-label">Сезон — 3 месяца</div>
+            <div class="af-val">Пары с постоянным партнёром. Состав фиксируется на весь сезон.</div>
+          </div>
         </div>
-        <div class="af-card">
-          <div class="af-icon">🎯</div>
-          <div class="af-label">Матчи</div>
-          <div class="af-val">Стандарт — ~1 в неделю, Активный — до 2</div>
+        <div class="af-row">
+          <div class="af-num">02</div>
+          <div class="af-body">
+            <div class="af-label">Режим участия <span class="af-tag">на выбор</span></div>
+            <div class="af-val">Стандарт — ~1 матч в неделю · Активный — до 2 матчей в неделю</div>
+          </div>
         </div>
-        <div class="af-card">
-          <div class="af-icon">📊</div>
-          <div class="af-label">Рейтинг</div>
-          <div class="af-val">Единая таблица, ELO. Соперник в диапазоне ±5 позиций</div>
+        <div class="af-row">
+          <div class="af-num">03</div>
+          <div class="af-body">
+            <div class="af-label">Рейтинг ELO</div>
+            <div class="af-val">Единая таблица для всех пар. Соперник подбирается в диапазоне ±5 позиций, не чаще раза в 6 недель.</div>
+          </div>
         </div>
-        <div class="af-card">
-          <div class="af-icon">🏆</div>
-          <div class="af-label">Финал</div>
-          <div class="af-val">Топ-8 пар, плей-офф. Нужно сыграть ≥8 матчей</div>
+        <div class="af-row">
+          <div class="af-num">04</div>
+          <div class="af-body">
+            <div class="af-label">Пауза без потери рейтинга</div>
+            <div class="af-val">До 3 недель за сезон — если нужно выдохнуть.</div>
+          </div>
         </div>
-        <div class="af-card">
-          <div class="af-icon">⏸</div>
-          <div class="af-label">Пауза</div>
-          <div class="af-val">До 3 недель за сезон без потери рейтинга</div>
+        <div class="af-row">
+          <div class="af-num">05</div>
+          <div class="af-body">
+            <div class="af-label">Финал сезона <span class="af-tag">плей-офф</span></div>
+            <div class="af-val">Топ-8 пар по рейтингу. Условие: минимум 8 матчей за сезон.</div>
+          </div>
         </div>
-        <div class="af-card">
-          <div class="af-icon">📍</div>
-          <div class="af-label">Клубы</div>
-          <div class="af-val">Arena, Selectory, Locos — выбираете сами</div>
+        <div class="af-row">
+          <div class="af-num">06</div>
+          <div class="af-body">
+            <div class="af-label">Клубы</div>
+            <div class="af-val">Arena · Selectory · Locos — выбираете сами при регистрации.</div>
+          </div>
         </div>
       </div>
     </div>

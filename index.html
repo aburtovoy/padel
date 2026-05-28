@@ -29,7 +29,8 @@ body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', 
 .container { max-width: 900px; margin: 0 auto; }
 
 /* NAV */
-.nav { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.nav { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.nav::-webkit-scrollbar { display: none; }
 .nav-btn {
   font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em;
   text-transform: uppercase; padding: 1rem 1rem; background: none; border: none;

@@ -210,6 +210,25 @@ td:first-child { text-align: center; padding-left: 12px; }
 }
 .about-btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
+.about-format { margin-top: 2.5rem; }
+.about-format-title {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+}
+.about-format-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+}
+.af-card {
+  background: var(--bg); padding: 1.1rem 1rem;
+}
+.af-icon { font-size: 1.2rem; margin-bottom: 0.4rem; }
+.af-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent); margin-bottom: 0.3rem;
+}
+.af-val { font-size: 13px; color: var(--text); line-height: 1.5; }
+
 /* RULES PAGE */
 .rules-wrap { padding: 2rem 1.5rem 4rem; max-width: 680px; }
 .rules-section { margin-bottom: 2.5rem; }
@@ -270,6 +289,7 @@ td:first-child { text-align: center; padding-left: 12px; }
   .match-pair { font-size: 12px; }
   .match-score { font-size: 1.3rem; }
   .nav-btn { font-size: 10px; padding: 0.9rem 0.5rem; letter-spacing: 0.02em; }
+  .about-format-grid { grid-template-columns: repeat(2, 1fr); }
 }
 </style>
 </head>
@@ -308,6 +328,42 @@ td:first-child { text-align: center; padding-left: 12px; }
     </div>
     <div class="about-actions">
       <a class="about-btn about-btn-primary" href="https://t.me/burtovoy" target="_blank">✉ Регистрация</a>
+    </div>
+
+    <div class="about-format">
+      <div class="about-format-title">Как устроена лига</div>
+      <div class="about-format-grid">
+        <div class="af-card">
+          <div class="af-icon">📅</div>
+          <div class="af-label">Сезон</div>
+          <div class="af-val">3 месяца, пары с постоянным партнёром</div>
+        </div>
+        <div class="af-card">
+          <div class="af-icon">🎯</div>
+          <div class="af-label">Матчи</div>
+          <div class="af-val">Стандарт — ~1 в неделю, Активный — до 2</div>
+        </div>
+        <div class="af-card">
+          <div class="af-icon">📊</div>
+          <div class="af-label">Рейтинг</div>
+          <div class="af-val">Единая таблица, ELO. Соперник в диапазоне ±5 позиций</div>
+        </div>
+        <div class="af-card">
+          <div class="af-icon">🏆</div>
+          <div class="af-label">Финал</div>
+          <div class="af-val">Топ-8 пар, плей-офф. Нужно сыграть ≥8 матчей</div>
+        </div>
+        <div class="af-card">
+          <div class="af-icon">⏸</div>
+          <div class="af-label">Пауза</div>
+          <div class="af-val">До 3 недель за сезон без потери рейтинга</div>
+        </div>
+        <div class="af-card">
+          <div class="af-icon">📍</div>
+          <div class="af-label">Клубы</div>
+          <div class="af-val">Arena, Selectory, Locos — выбираете сами</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

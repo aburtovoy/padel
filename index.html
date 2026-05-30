@@ -732,7 +732,7 @@ async function loadRating() {
       const pair = String(c[0]?.v || '').trim();
       const elo  = num(c[3]?.f ?? c[3]?.v);
       if (pair && pair.includes('/')) {
-        eloMap[pair]    = elo || 1000;
+        eloMap[pair]    = elo || 1200;
         winsMap[pair]   = 0;
         lossesMap[pair] = 0;
       }
@@ -757,8 +757,8 @@ async function loadRating() {
 
         if (!pairA || !pairB) return;
 
-        if (!(pairA in eloMap)) { eloMap[pairA] = 1000; winsMap[pairA] = 0; lossesMap[pairA] = 0; }
-        if (!(pairB in eloMap)) { eloMap[pairB] = 1000; winsMap[pairB] = 0; lossesMap[pairB] = 0; }
+        if (!(pairA in eloMap)) { eloMap[pairA] = 1200; winsMap[pairA] = 0; lossesMap[pairA] = 0; }
+        if (!(pairB in eloMap)) { eloMap[pairB] = 1200; winsMap[pairB] = 0; lossesMap[pairB] = 0; }
 
         eloMap[pairA] += deltaA;
         eloMap[pairB] += deltaB;

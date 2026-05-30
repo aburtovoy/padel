@@ -732,7 +732,7 @@ async function loadRating() {
       const pair = String(c[0]?.v || '').trim();
       const elo  = num(c[3]?.f ?? c[3]?.v);
       if (pair && pair.includes('/')) {
-        eloMap[pair]    = elo || 1200;
+        eloMap[pair]    = 1200;
         winsMap[pair]   = 0;
         lossesMap[pair] = 0;
       }

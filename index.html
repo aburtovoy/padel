@@ -143,7 +143,47 @@ td:first-child { text-align: center; padding-left: 12px; }
 .match-elo { font-family: 'IBM Plex Mono', monospace; font-size: 10px; display: block; margin-top: 1px; }
 .elo-up { color: var(--green); } .elo-down { color: var(--red); }
 
-/* STATE */
+/* MATCHES TABS */
+.matches-tabs {
+  display: flex; gap: 4px; margin-bottom: 1.2rem;
+  border-bottom: 2px solid var(--border); padding-bottom: 0;
+}
+.mtab {
+  background: none; border: none; cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  color: var(--muted); padding: 8px 16px 10px;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s; letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.mtab:hover { color: var(--text); }
+.mtab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* UPCOMING MATCHES */
+.upcoming-day { margin-bottom: 1.5rem; }
+.upcoming-day-header {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); padding: 6px 0;
+  border-bottom: 1px solid var(--border); margin-bottom: 0;
+}
+.upcoming-day-header strong { color: var(--text); font-size: 13px; }
+.upcoming-match {
+  display: grid; grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 0.8rem; padding: 10px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.upcoming-match:last-child { border-bottom: none; }
+.upcoming-pair { font-size: 13px; font-weight: 500; }
+.upcoming-pair.right { text-align: right; }
+.upcoming-vs {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--muted); text-align: center; letter-spacing: 0.08em;
+}
+.no-upcoming {
+  padding: 3rem 2rem; text-align: center;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted);
+}
 .state { padding: 4rem 2rem; text-align: center; font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 13px; }
 .state .big { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--border); display: block; margin-bottom: 1rem; }
 .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
@@ -465,7 +505,14 @@ td:first-child { text-align: center; padding-left: 12px; }
 <div id="page-matches" class="page">
   <div class="matches-wrap">
     <div id="matches-state" class="state"><div class="spinner"></div>Загружаем матчи...</div>
-    <div id="matches-list"></div>
+    <div id="matches-tabs-wrap" style="display:none">
+      <div class="matches-tabs">
+        <button class="mtab active" onclick="switchMatchTab('upcoming', this)">Предстоящие</button>
+        <button class="mtab" onclick="switchMatchTab('history', this)">История</button>
+      </div>
+      <div id="matches-upcoming"></div>
+      <div id="matches-history" style="display:none"></div>
+    </div>
   </div>
 </div>
 
@@ -844,10 +891,17 @@ async function loadRating() {
 }
 
 /* ── МАТЧИ ── */
+function switchMatchTab(tab, btn) {
+  document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('matches-upcoming').style.display = tab === 'upcoming' ? '' : 'none';
+  document.getElementById('matches-history').style.display  = tab === 'history'  ? '' : 'none';
+}
+
 async function loadMatches() {
   document.getElementById('matches-state').style.display = '';
   document.getElementById('matches-state').innerHTML = '<div class="spinner"></div>Загружаем матчи...';
-  document.getElementById('matches-list').innerHTML = '';
+  document.getElementById('matches-tabs-wrap').style.display = 'none';
 
   try {
     const rows = await fetchSheet('Матчи');
@@ -863,67 +917,126 @@ async function loadMatches() {
       return;
     }
 
-    const list = document.getElementById('matches-list');
     matchesData = [];
+    const upcoming = [];
+    const history  = [];
 
-    const table = document.createElement('table');
-    table.className = 'matches-table';
-    table.innerHTML = `<thead><tr>
-      <th>#</th>
-      <th style="text-align:right">Пара A</th>
-      <th>Счёт</th>
-      <th>Пара Б</th>
-      <th style="text-align:right">Дата</th>
-    </tr></thead>`;
-    const tbody = document.createElement('tbody');
-
-    [...matches].reverse().forEach(row => {
-      const c       = row.c || [];
-      const num_    = num(c[0]?.v);
-      const date    = c[1]?.f || c[1]?.v || '';
-      const pairA   = String(c[2]?.v || '').trim();
-      const pairB   = String(c[3]?.v || '').trim();
-      const score   = String(c[4]?.v || '').trim();
-      const games   = String(c[5]?.v || '').trim();
-      const winner  = String(c[6]?.v || '').trim();
-      const eloA    = num(c[7]?.v);
-      const eloB    = num(c[8]?.v);
-      matchesData.push({ num: num_, date, pairA, pairB, score, games, winner, eloA, eloB });
-
-      const aWon = winner === pairA;
-      const bWon = winner === pairB;
-
-      const eloAHtml = eloA !== 0
-        ? `<span class="match-elo ${eloA>0?'elo-up':'elo-down'}">${eloA>0?'+':''}${eloA}</span>`
-        : '';
-      const eloBHtml = eloB !== 0
-        ? `<span class="match-elo ${eloB>0?'elo-up':'elo-down'}">${eloB>0?'+':''}${eloB}</span>`
-        : '';
-
-      const tr = document.createElement('tr');
-      tr.className = 'match-row';
-      tr.innerHTML = `
-        <td class="td-num">${num_}</td>
-        <td class="td-pair" style="text-align:right">
-          <span class="${aWon?'winner':bWon?'loser':''}">${pairA}</span>
-          ${eloAHtml}
-        </td>
-        <td class="td-score">
-          <div class="score-main">${score || '—'}</div>
-          <div class="score-games">${games}</div>
-        </td>
-        <td class="td-pair">
-          <span class="${bWon?'winner':aWon?'loser':''}">${pairB}</span>
-          ${eloBHtml}
-        </td>
-        <td class="td-date">${date}</td>`;
-      tbody.appendChild(tr);
+    matches.forEach(row => {
+      const c      = row.c || [];
+      const num_   = num(c[0]?.v);
+      const date   = c[1]?.f || c[1]?.v || '';
+      const pairA  = String(c[2]?.v || '').trim();
+      const pairB  = String(c[3]?.v || '').trim();
+      const score  = String(c[4]?.v || '').trim();
+      const games  = String(c[5]?.v || '').trim();
+      const winner = String(c[6]?.v || '').trim();
+      const eloA   = num(c[7]?.v);
+      const eloB   = num(c[8]?.v);
+      const m = { num: num_, date, pairA, pairB, score, games, winner, eloA, eloB };
+      matchesData.push(m);
+      if (!winner) upcoming.push(m); else history.push(m);
     });
 
-    table.appendChild(tbody);
-    list.appendChild(table);
+    // ── ПРЕДСТОЯЩИЕ ──
+    const upcomingEl = document.getElementById('matches-upcoming');
+    upcomingEl.innerHTML = '';
+    if (!upcoming.length) {
+      upcomingEl.innerHTML = '<div class="no-upcoming">Предстоящих матчей нет</div>';
+    } else {
+      // Группируем по дате
+      const byDay = {};
+      const dayOrder = [];
+      upcoming.forEach(m => {
+        const key = m.date || 'Без даты';
+        if (!byDay[key]) { byDay[key] = []; dayOrder.push(key); }
+        byDay[key].push(m);
+      });
+
+      // Форматируем метку дня с днём недели
+      const RU_DAYS = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+      const RU_MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+      function formatDayLabel(dateStr) {
+        // пробуем распарсить DD.MM.YYYY или похожие форматы
+        if (!dateStr || dateStr === 'Без даты') return dateStr;
+        const parts = dateStr.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
+        if (!parts) return dateStr;
+        const d = parseInt(parts[1]), mo = parseInt(parts[2]) - 1;
+        const yr = parts[3].length === 2 ? 2000 + parseInt(parts[3]) : parseInt(parts[3]);
+        const dt = new Date(yr, mo, d);
+        if (isNaN(dt)) return dateStr;
+        return `${d} ${RU_MONTHS[mo]} · ${RU_DAYS[dt.getDay()]}`;
+      }
+
+      dayOrder.forEach(day => {
+        const block = document.createElement('div');
+        block.className = 'upcoming-day';
+        block.innerHTML = `<div class="upcoming-day-header"><strong>${formatDayLabel(day)}</strong></div>`;
+        byDay[day].forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'upcoming-match';
+          div.innerHTML = `
+            <div class="upcoming-pair right">${m.pairA}</div>
+            <div class="upcoming-vs">vs</div>
+            <div class="upcoming-pair">${m.pairB}</div>`;
+          block.appendChild(div);
+        });
+        upcomingEl.appendChild(block);
+      });
+    }
+
+    // ── ИСТОРИЯ ──
+    const historyEl = document.getElementById('matches-history');
+    historyEl.innerHTML = '';
+    if (history.length) {
+      const table = document.createElement('table');
+      table.className = 'matches-table';
+      table.innerHTML = `<thead><tr>
+        <th>#</th>
+        <th style="text-align:right">Пара A</th>
+        <th>Счёт</th>
+        <th>Пара Б</th>
+        <th style="text-align:right">Дата</th>
+      </tr></thead>`;
+      const tbody = document.createElement('tbody');
+      [...history].reverse().forEach(m => {
+        const aWon = m.winner === m.pairA;
+        const bWon = m.winner === m.pairB;
+        const eloAHtml = m.eloA !== 0
+          ? `<span class="match-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
+        const eloBHtml = m.eloB !== 0
+          ? `<span class="match-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
+        const tr = document.createElement('tr');
+        tr.className = 'match-row';
+        tr.innerHTML = `
+          <td class="td-num">${m.num}</td>
+          <td class="td-pair" style="text-align:right">
+            <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
+            ${eloAHtml}
+          </td>
+          <td class="td-score">
+            <div class="score-main">${m.score || '—'}</div>
+            <div class="score-games">${m.games}</div>
+          </td>
+          <td class="td-pair">
+            <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
+            ${eloBHtml}
+          </td>
+          <td class="td-date">${m.date}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      historyEl.appendChild(table);
+    }
+
+    // Показываем вкладку с предстоящими если они есть, иначе историю
+    const defaultTab = upcoming.length ? 'upcoming' : 'history';
+    document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.mtab')[defaultTab === 'upcoming' ? 0 : 1].classList.add('active');
+    document.getElementById('matches-upcoming').style.display = defaultTab === 'upcoming' ? '' : 'none';
+    document.getElementById('matches-history').style.display  = defaultTab === 'history'  ? '' : 'none';
 
     document.getElementById('matches-state').style.display = 'none';
+    document.getElementById('matches-tabs-wrap').style.display = '';
 
   } catch(e) {
     document.getElementById('matches-state').innerHTML =

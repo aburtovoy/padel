@@ -89,6 +89,10 @@ tbody tr:hover { background: rgba(255,255,255,0.025); }
 tbody tr.top1 { background: rgba(245,200,66,0.06); }
 tbody tr.top2 { background: rgba(176,184,196,0.05); }
 tbody tr.top3 { background: rgba(212,132,90,0.05); }
+tbody tr.zone-green { background: rgba(80,200,120,0.05); }
+tbody tr.zone-red   { background: rgba(220,80,80,0.05); }
+tbody tr.zone-green:hover { background: rgba(80,200,120,0.09); }
+tbody tr.zone-red:hover   { background: rgba(220,80,80,0.09); }
 td { padding: 13px 12px 13px 0; font-size: 14px; vertical-align: middle; }
 td:first-child { text-align: center; padding-left: 12px; }
 
@@ -776,8 +780,12 @@ function renderRating() {
 
     const origPlace = row.place;
     const rc = origPlace===1?'top1':origPlace===2?'top2':origPlace===3?'top3':'';
+    const total = ratingData.length;
+    const zoneGreen = !sortCol && place <= 8;
+    const zoneRed   = !sortCol && place > total - 3;
     const tr = document.createElement('tr');
-    if (rc && !sortCol) tr.className = rc;
+    const classes = [rc && !sortCol ? rc : '', zoneGreen ? 'zone-green' : '', zoneRed ? 'zone-red' : ''].filter(Boolean).join(' ');
+    if (classes) tr.className = classes;
     tr.innerHTML = `
       <td>${ph}</td>
       <td><span class="pair-name">${row.pair}</span></td>

@@ -108,30 +108,40 @@ td:first-child { text-align: center; padding-left: 12px; }
 
 /* MATCHES */
 .matches-wrap { padding: 0 1.5rem 4rem; }
-.match-card {
-  border: 1px solid var(--border); border-radius: 6px;
-  margin-top: 1rem; overflow: hidden;
+.matches-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.matches-table thead tr {
+  border-bottom: 2px solid var(--border);
 }
-.match-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; background: var(--surface);
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted);
+.matches-table thead th {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--muted); font-weight: 400; padding: 8px 6px;
+  text-transform: uppercase; letter-spacing: 0.05em;
 }
-.match-body {
-  display: grid; grid-template-columns: 1fr auto 1fr;
-  align-items: center; gap: 1rem; padding: 16px 14px;
+.matches-table thead th:nth-child(1) { text-align: left; }
+.matches-table thead th:nth-child(2) { text-align: right; }
+.matches-table thead th:nth-child(3) { text-align: center; }
+.matches-table thead th:nth-child(4) { text-align: left; }
+.matches-table thead th:nth-child(5) { text-align: right; }
+.match-row { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.match-row:hover { background: var(--surface); }
+.match-row td { padding: 9px 6px; vertical-align: middle; }
+.match-row .td-num {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--muted); white-space: nowrap; padding-right: 10px;
 }
-.match-pair { font-size: 14px; font-weight: 500; }
-.match-pair.winner { color: var(--accent); }
-.match-pair.loser { color: var(--muted); }
-.match-pair.right { text-align: right; }
-.match-score-wrap { text-align: center; }
-.match-score { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--text); letter-spacing: 0.05em; }
-.match-games { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
-.match-elo { font-family: 'IBM Plex Mono', monospace; font-size: 11px; margin-top: 4px; }
+.match-row .td-date {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--muted); white-space: nowrap;
+}
+.match-row .td-pair { font-weight: 500; }
+.match-row .td-pair.right { text-align: right; }
+.match-row .td-pair .winner { color: var(--accent); }
+.match-row .td-pair .loser  { color: var(--muted); }
+.match-row .td-score { text-align: center; white-space: nowrap; }
+.match-row .score-main { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em; line-height: 1; }
+.match-row .score-games { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); }
+.match-elo { font-family: 'IBM Plex Mono', monospace; font-size: 10px; display: block; margin-top: 1px; }
 .elo-up { color: var(--green); } .elo-down { color: var(--red); }
-.match-pair-col { display: flex; flex-direction: column; gap: 3px; }
-.match-pair-col.right { align-items: flex-end; }
 
 /* STATE */
 .state { padding: 4rem 2rem; text-align: center; font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 13px; }
@@ -179,8 +189,6 @@ td:first-child { text-align: center; padding-left: 12px; }
 }
 .modal-close:hover { color: var(--text); }
 .modal-body { overflow-y: auto; padding: 12px 16px 20px; }
-.modal-body .match-card { margin-top: 10px; }
-.modal-body .match-card:first-child { margin-top: 0; }
 .modal-empty { padding: 3rem; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--muted); }
 
 /* ABOUT PAGE */
@@ -305,9 +313,9 @@ td:first-child { text-align: center; padding-left: 12px; }
   .elo-delta { font-size: 9px; }
   .th-short { display: inline; }
   .th-full  { display: none; }
-  .match-body { gap: 0.4rem; padding: 12px 10px; }
-  .match-pair { font-size: 12px; }
-  .match-score { font-size: 1.3rem; }
+  .matches-table thead th, .match-row td { padding: 7px 3px; }
+  .matches-table { font-size: 11px; }
+  .match-row .score-main { font-size: 1.1rem; }
   .nav-btn { font-size: 10px; padding: 0.9rem 0.5rem; letter-spacing: 0.02em; }
 }
 </style>
@@ -586,34 +594,42 @@ function openModal(pair, filter) {
     body.innerHTML = '<div class="modal-empty">Матчей нет</div>';
   } else {
     body.innerHTML = '';
+    const table = document.createElement('table');
+    table.className = 'matches-table';
+    table.innerHTML = `<thead><tr>
+      <th>#</th>
+      <th style="text-align:right">Пара A</th>
+      <th>Счёт</th>
+      <th>Пара Б</th>
+      <th style="text-align:right">Дата</th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody');
     [...filtered].reverse().forEach(m => {
       const aWon = m.winner === m.pairA;
       const bWon = m.winner === m.pairB;
-      const eloAHtml = m.eloA !== 0 ? `<span class="match-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA} ELO</span>` : '';
-      const eloBHtml = m.eloB !== 0 ? `<span class="match-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB} ELO</span>` : '';
-      const card = document.createElement('div');
-      card.className = 'match-card';
-      card.innerHTML = `
-        <div class="match-header">
-          <span class="match-num">Матч #${m.num}</span>
-          <span class="match-date">${m.date}</span>
-        </div>
-        <div class="match-body">
-          <div class="match-pair-col">
-            <span class="match-pair ${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
-            ${eloAHtml}
-          </div>
-          <div class="match-score-wrap">
-            <div class="match-score">${m.score || '—'}</div>
-            <div class="match-games">${m.games}</div>
-          </div>
-          <div class="match-pair-col right">
-            <span class="match-pair right ${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
-            ${eloBHtml}
-          </div>
-        </div>`;
-      body.appendChild(card);
+      const eloAHtml = m.eloA !== 0 ? `<span class="match-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
+      const eloBHtml = m.eloB !== 0 ? `<span class="match-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
+      const tr = document.createElement('tr');
+      tr.className = 'match-row';
+      tr.innerHTML = `
+        <td class="td-num">${m.num}</td>
+        <td class="td-pair" style="text-align:right">
+          <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
+          ${eloAHtml}
+        </td>
+        <td class="td-score">
+          <div class="score-main">${m.score || '—'}</div>
+          <div class="score-games">${m.games}</div>
+        </td>
+        <td class="td-pair">
+          <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
+          ${eloBHtml}
+        </td>
+        <td class="td-date">${m.date}</td>`;
+      tbody.appendChild(tr);
     });
+    table.appendChild(tbody);
+    body.appendChild(table);
   }
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -849,6 +865,18 @@ async function loadMatches() {
 
     const list = document.getElementById('matches-list');
     matchesData = [];
+
+    const table = document.createElement('table');
+    table.className = 'matches-table';
+    table.innerHTML = `<thead><tr>
+      <th>#</th>
+      <th style="text-align:right">Пара A</th>
+      <th>Счёт</th>
+      <th>Пара Б</th>
+      <th style="text-align:right">Дата</th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody');
+
     [...matches].reverse().forEach(row => {
       const c       = row.c || [];
       const num_    = num(c[0]?.v);
@@ -866,35 +894,34 @@ async function loadMatches() {
       const bWon = winner === pairB;
 
       const eloAHtml = eloA !== 0
-        ? `<span class="match-elo ${eloA>0?'elo-up':'elo-down'}">${eloA>0?'+':''}${eloA} ELO</span>`
+        ? `<span class="match-elo ${eloA>0?'elo-up':'elo-down'}">${eloA>0?'+':''}${eloA}</span>`
         : '';
       const eloBHtml = eloB !== 0
-        ? `<span class="match-elo ${eloB>0?'elo-up':'elo-down'}">${eloB>0?'+':''}${eloB} ELO</span>`
+        ? `<span class="match-elo ${eloB>0?'elo-up':'elo-down'}">${eloB>0?'+':''}${eloB}</span>`
         : '';
 
-      const card = document.createElement('div');
-      card.className = 'match-card';
-      card.innerHTML = `
-        <div class="match-header">
-          <span class="match-num">Матч #${num_}</span>
-          <span class="match-date">${date}</span>
-        </div>
-        <div class="match-body">
-          <div class="match-pair-col">
-            <span class="match-pair ${aWon?'winner':bWon?'loser':''}">${pairA}</span>
-            ${eloAHtml}
-          </div>
-          <div class="match-score-wrap">
-            <div class="match-score">${score || '—'}</div>
-            <div class="match-games">${games}</div>
-          </div>
-          <div class="match-pair-col right">
-            <span class="match-pair right ${bWon?'winner':aWon?'loser':''}">${pairB}</span>
-            ${eloBHtml}
-          </div>
-        </div>`;
-      list.appendChild(card);
+      const tr = document.createElement('tr');
+      tr.className = 'match-row';
+      tr.innerHTML = `
+        <td class="td-num">${num_}</td>
+        <td class="td-pair" style="text-align:right">
+          <span class="${aWon?'winner':bWon?'loser':''}">${pairA}</span>
+          ${eloAHtml}
+        </td>
+        <td class="td-score">
+          <div class="score-main">${score || '—'}</div>
+          <div class="score-games">${games}</div>
+        </td>
+        <td class="td-pair">
+          <span class="${bWon?'winner':aWon?'loser':''}">${pairB}</span>
+          ${eloBHtml}
+        </td>
+        <td class="td-date">${date}</td>`;
+      tbody.appendChild(tr);
     });
+
+    table.appendChild(tbody);
+    list.appendChild(table);
 
     document.getElementById('matches-state').style.display = 'none';
 

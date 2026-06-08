@@ -510,9 +510,10 @@ td:first-child { text-align: center; padding-left: 12px; }
   <div class="matches-wrap">
     <div id="matches-state" class="state"><div class="spinner"></div>Загружаем матчи...</div>
     <div id="matches-tabs-wrap" style="display:none">
-      <div class="matches-tabs">
+      <div class="matches-tabs" style="display:flex;align-items:center;gap:8px">
         <button class="mtab active" onclick="switchMatchTab('upcoming', this)">Предстоящие</button>
         <button class="mtab" onclick="switchMatchTab('history', this)">История</button>
+        <button id="copy-upcoming-btn" title="Скопировать предстоящие матчи" onclick="copyUpcoming()" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--muted);font-size:16px;line-height:1;border-radius:4px;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">⎘</button>
       </div>
       <div id="matches-upcoming"></div>
       <div id="matches-history" style="display:none"></div>
@@ -899,6 +900,29 @@ async function loadRating() {
 }
 
 /* ── МАТЧИ ── */
+function copyUpcoming() {
+  const el = document.getElementById('matches-upcoming');
+  if (!el) return;
+  const lines = [];
+  el.querySelectorAll('.upcoming-day').forEach(dayBlock => {
+    const header = dayBlock.querySelector('.upcoming-day-header strong');
+    if (header) lines.push(header.textContent.trim());
+    dayBlock.querySelectorAll('.upcoming-match').forEach(match => {
+      const pairs = match.querySelectorAll('.upcoming-pair');
+      if (pairs.length >= 2) {
+        lines.push(`${pairs[0].textContent.trim()} vs ${pairs[1].textContent.trim()}`);
+      }
+    });
+    lines.push('');
+  });
+  const text = lines.join('\n').trim();
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-upcoming-btn');
+    if (btn) { btn.textContent = '✓'; setTimeout(() => btn.textContent = '⎘', 1500); }
+  });
+}
+
 function switchMatchTab(tab, btn) {
   document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -958,6 +982,12 @@ async function loadMatches() {
         const key = m.date || 'Без даты';
         if (!byDay[key]) { byDay[key] = []; dayOrder.push(key); }
         byDay[key].push(m);
+      });
+      // Матчи без даты — в самый конец
+      dayOrder.sort((a, b) => {
+        if (a === 'Без даты') return 1;
+        if (b === 'Без даты') return -1;
+        return 0;
       });
 
       // Форматируем метку дня с днём недели

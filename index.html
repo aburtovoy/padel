@@ -983,12 +983,15 @@ async function loadMatches() {
         if (!byDay[key]) { byDay[key] = []; dayOrder.push(key); }
         byDay[key].push(m);
       });
-      // Матчи без даты — в самый конец
-      dayOrder.sort((a, b) => {
-        if (a === 'Без даты') return 1;
-        if (b === 'Без даты') return -1;
-        return 0;
-      });
+      // Сортируем по дате по возрастанию, "Без даты" — в конец
+      function parseDateKey(s) {
+        if (!s || s === 'Без даты') return Infinity;
+        const p = s.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
+        if (!p) return Infinity;
+        const yr = p[3].length === 2 ? 2000 + parseInt(p[3]) : parseInt(p[3]);
+        return new Date(yr, parseInt(p[2]) - 1, parseInt(p[1])).getTime();
+      }
+      dayOrder.sort((a, b) => parseDateKey(a) - parseDateKey(b));
 
       // Форматируем метку дня с днём недели
       const RU_DAYS = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];

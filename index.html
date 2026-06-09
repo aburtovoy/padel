@@ -179,6 +179,7 @@ td:first-child { text-align: center; padding-left: 12px; }
 }
 .upcoming-match:last-child { border-bottom: none; }
 .upcoming-pair { font-size: 13px; font-weight: 500; }
+.upcoming-meta { font-size: 11px; color: var(--muted); grid-column: 1 / -1; text-align: center; margin-top: 2px; }
 .upcoming-pair.right { text-align: right; }
 .upcoming-vs {
   font-family: 'IBM Plex Mono', monospace; font-size: 10px;
@@ -909,8 +910,11 @@ function copyUpcoming() {
     if (header) lines.push(header.textContent.trim());
     dayBlock.querySelectorAll('.upcoming-match').forEach(match => {
       const pairs = match.querySelectorAll('.upcoming-pair');
+      const meta = match.querySelector('.upcoming-meta');
       if (pairs.length >= 2) {
-        lines.push(`${pairs[0].textContent.trim()} vs ${pairs[1].textContent.trim()}`);
+        const line = `${pairs[0].textContent.trim()} vs ${pairs[1].textContent.trim()}`;
+        const metaText = meta ? '  ' + meta.textContent.trim() : '';
+        lines.push(line + metaText);
       }
     });
     lines.push('');
@@ -964,7 +968,11 @@ async function loadMatches() {
       const winner = String(c[6]?.v || '').trim();
       const eloA   = num(c[7]?.v);
       const eloB   = num(c[8]?.v);
-      const m = { num: num_, date, pairA, pairB, score, games, winner, eloA, eloB };
+      const timeRaw = c[1]?.v || '';
+      const timeMatch = String(timeRaw).match(/\d{2}:\d{2}:\d{2}$/);
+      const time = timeMatch ? timeMatch[0].slice(0,5) : '';
+      const club = String(c[9]?.v || '').trim();
+      const m = { num: num_, date, pairA, pairB, score, games, winner, eloA, eloB, time, club };
       matchesData.push(m);
       if (!winner) upcoming.push(m); else history.push(m);
     });
@@ -1015,10 +1023,12 @@ async function loadMatches() {
         byDay[day].forEach(m => {
           const div = document.createElement('div');
           div.className = 'upcoming-match';
+          const meta = [m.time ? '🕐 ' + m.time : '', m.club ? '📍 ' + m.club : ''].filter(Boolean).join(' · ');
           div.innerHTML = `
             <div class="upcoming-pair right">${m.pairA}</div>
             <div class="upcoming-vs">vs</div>
-            <div class="upcoming-pair">${m.pairB}</div>`;
+            <div class="upcoming-pair">${m.pairB}</div>
+            ${meta ? `<div class="upcoming-meta">${meta}</div>` : ''}`;
           block.appendChild(div);
         });
         upcomingEl.appendChild(block);

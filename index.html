@@ -968,9 +968,11 @@ async function loadMatches() {
       const winner = String(c[6]?.v || '').trim();
       const eloA   = num(c[7]?.v);
       const eloB   = num(c[8]?.v);
-      const timeRaw = c[1]?.v || '';
-      const timeMatch = String(timeRaw).match(/\d{2}:\d{2}:\d{2}$/);
-      const time = timeMatch ? timeMatch[0].slice(0,5) : '';
+      const dateV = String(c[1]?.v || '');
+      const dtParts = dateV.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+)/);
+      const time = dtParts && (parseInt(dtParts[4]) || parseInt(dtParts[5]))
+        ? String(dtParts[4]).padStart(2,'0') + ':' + String(dtParts[5]).padStart(2,'0')
+        : '';
       const club = String(c[9]?.v || '').trim();
       const m = { num: num_, date, pairA, pairB, score, games, winner, eloA, eloB, time, club };
       matchesData.push(m);

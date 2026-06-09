@@ -370,9 +370,10 @@ td:first-child { text-align: center; padding-left: 12px; }
 <div class="container">
 
 <div class="nav">
-  <button class="nav-btn active" onclick="switchPage('about', this)">🎾 О лиге</button>
+  <button class="nav-btn active" onclick="switchPage('about', this)">🏠 Главная</button>
   <button class="nav-btn" onclick="switchPage('rating', this)">🏆 Рейтинг</button>
-  <button class="nav-btn" onclick="switchPage('matches', this)">📋 Матчи</button>
+  <button class="nav-btn" onclick="switchPage('matches', this, 'upcoming')">📅 Расписание</button>
+  <button class="nav-btn" onclick="switchPage('matches', this, 'history')">📋 История</button>
   <button class="nav-btn" onclick="switchPage('rules', this)">📖 Регламент</button>
 </div>
 
@@ -699,7 +700,7 @@ function closeModal(e) {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
 
-function switchPage(name, btn) {
+function switchPage(name, btn, tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -710,11 +711,23 @@ function switchPage(name, btn) {
   if (name === 'rating') {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
   } else if (name === 'matches') {
-    el.innerHTML = '<span style="color:var(--accent)">Матчи</span>';
+    el.innerHTML = tab === 'history'
+      ? '<span style="color:var(--accent)">История</span>'
+      : '<span style="color:var(--accent)">Расписание</span>';
   } else if (name === 'rules') {
     el.innerHTML = '<span style="color:var(--accent)">Регламент</span>';
   } else {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
+  }
+  if (name === 'matches' && tab) {
+    const mtab = tab === 'history' ? 1 : 0;
+    const mtabs = document.querySelectorAll('.mtab');
+    if (mtabs.length) {
+      mtabs.forEach(b => b.classList.remove('active'));
+      mtabs[mtab].classList.add('active');
+      document.getElementById('matches-upcoming').style.display = tab === 'upcoming' ? '' : 'none';
+      document.getElementById('matches-history').style.display  = tab === 'history'  ? '' : 'none';
+    }
   }
 }
 

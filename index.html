@@ -122,18 +122,13 @@ td:first-child { text-align: center; padding-left: 12px; }
   color: var(--muted); font-weight: 400; padding: 8px 6px;
   text-transform: uppercase; letter-spacing: 0.05em;
 }
-.matches-table thead th:nth-child(1) { text-align: left; }
-.matches-table thead th:nth-child(2) { text-align: right; }
-.matches-table thead th:nth-child(3) { text-align: center; }
-.matches-table thead th:nth-child(4) { text-align: left; }
-.matches-table thead th:nth-child(5) { text-align: right; }
+.matches-table thead th:nth-child(1) { text-align: right; }
+.matches-table thead th:nth-child(2) { text-align: center; }
+.matches-table thead th:nth-child(3) { text-align: left; }
+.matches-table thead th:nth-child(4) { text-align: right; }
 .match-row { border-bottom: 1px solid var(--border); transition: background 0.15s; }
 .match-row:hover { background: var(--surface); }
 .match-row td { padding: 9px 6px; vertical-align: middle; }
-.match-row .td-num {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  color: var(--muted); white-space: nowrap; padding-right: 10px;
-}
 .match-row .td-date {
   font-family: 'IBM Plex Mono', monospace; font-size: 10px;
   color: var(--muted); white-space: nowrap;
@@ -340,8 +335,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 .th-full  { display: inline; }
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .header { padding: 1.5rem 1rem 1.2rem; }
-  .table-wrap, .matches-wrap { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .header { padding: 1.5rem 1.5rem 1.2rem; }
+  .table-wrap, .matches-wrap { padding-left: 1rem; padding-right: 1rem; }
   .hide-sm { display: none; }
   table { min-width: 0; width: 100%; table-layout: fixed; }
   th, td { padding-left: 4px; padding-right: 4px; font-size: 12px; }
@@ -662,7 +657,6 @@ function openModal(pair, filter) {
       const tr = document.createElement('tr');
       tr.className = 'match-row';
       tr.innerHTML = `
-        <td class="td-num">${m.num}</td>
         <td class="td-pair" style="text-align:right">
           <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
           ${eloAHtml}
@@ -1073,7 +1067,6 @@ async function loadMatches() {
       const table = document.createElement('table');
       table.className = 'matches-table';
       table.innerHTML = `<thead><tr>
-        <th>#</th>
         <th style="text-align:right">Пара A</th>
         <th>Счёт</th>
         <th>Пара Б</th>
@@ -1090,7 +1083,6 @@ async function loadMatches() {
         const tr = document.createElement('tr');
         tr.className = 'match-row';
         tr.innerHTML = `
-          <td class="td-num">${m.num}</td>
           <td class="td-pair" style="text-align:right">
             <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
             ${eloAHtml}

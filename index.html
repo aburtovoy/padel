@@ -144,26 +144,27 @@ td:first-child { text-align: center; padding-left: 12px; }
 .elo-up { color: var(--green); } .elo-down { color: var(--red); }
 
 /* UPCOMING MATCHES */
-.upcoming-day { margin-bottom: 1.5rem; }
+.upcoming-day { margin-bottom: 2rem; }
 .upcoming-day-header {
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
   text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--muted); padding: 6px 0;
+  color: var(--muted); padding: 8px 0 6px;
   border-bottom: 1px solid var(--border); margin-bottom: 0;
 }
-.upcoming-day-header strong { color: var(--text); font-size: 13px; }
+.upcoming-day-header strong { color: var(--text); font-size: 14px; letter-spacing: 0; text-transform: none; }
 .upcoming-match {
   display: grid; grid-template-columns: 1fr auto 1fr;
-  align-items: center; gap: 0.8rem; padding: 10px 4px;
+  align-items: center; gap: 0.6rem; padding: 14px 0;
   border-bottom: 1px solid var(--border);
 }
 .upcoming-match:last-child { border-bottom: none; }
-.upcoming-pair { font-size: 13px; font-weight: 500; }
-.upcoming-meta { font-size: 11px; color: var(--muted); grid-column: 1 / -1; text-align: center; margin-top: 2px; }
+.upcoming-pair { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.upcoming-meta { font-size: 11px; color: var(--muted); grid-column: 1 / -1; text-align: center; margin-top: 4px; }
 .upcoming-pair.right { text-align: right; }
 .upcoming-vs {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  color: var(--muted); text-align: center; letter-spacing: 0.08em;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700;
+  color: var(--accent); text-align: center; letter-spacing: 0.05em;
+  background: var(--accent-dim); border-radius: 4px; padding: 4px 8px;
 }
 .no-upcoming {
   padding: 3rem 2rem; text-align: center;
@@ -335,7 +336,7 @@ td:first-child { text-align: center; padding-left: 12px; }
 .th-full  { display: inline; }
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .header { padding: 1.5rem 1.5rem 1.2rem; }
+  .header { padding: 1.5rem 1rem 1.2rem; }
   .table-wrap, .matches-wrap { padding-left: 1rem; padding-right: 1rem; }
   .hide-sm { display: none; }
   table { min-width: 0; width: 100%; table-layout: fixed; }
@@ -1070,7 +1071,6 @@ async function loadMatches() {
         <th style="text-align:right">Пара A</th>
         <th>Счёт</th>
         <th>Пара Б</th>
-        <th style="text-align:right">Дата</th>
       </tr></thead>`;
       const tbody = document.createElement('tbody');
       [...history].reverse().forEach(m => {
@@ -1094,8 +1094,7 @@ async function loadMatches() {
           <td class="td-pair">
             <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
             ${eloBHtml}
-          </td>
-          <td class="td-date">${m.date}</td>`;
+          </td>`;
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);

@@ -721,11 +721,20 @@ function applyHash(hash) {
   if (page === 'rating') {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
   } else if (page === 'matches') {
-    el.innerHTML = '<span style="color:var(--accent)">Матчи</span>';
+    el.innerHTML = tab === 'history'
+      ? '<span style="color:var(--accent)">История</span>'
+      : '<span style="color:var(--accent)">Расписание</span>';
   } else if (page === 'rules') {
     el.innerHTML = '<span style="color:var(--accent)">Регламент</span>';
   } else {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
+  }
+
+  if (page === 'matches') {
+    const upEl = document.getElementById('matches-upcoming');
+    const hiEl = document.getElementById('matches-history');
+    if (upEl) upEl.style.display = tab === 'history' ? 'none' : '';
+    if (hiEl) hiEl.style.display = tab === 'history' ? '' : 'none';
   }
 }
 
@@ -1108,6 +1117,8 @@ async function loadMatches() {
 
     document.getElementById('matches-state').style.display = 'none';
     document.getElementById('matches-tabs-wrap').style.display = '';
+    // Apply current hash visibility after data loads
+    applyHash(window.location.hash);
 
   } catch(e) {
     document.getElementById('matches-state').innerHTML =

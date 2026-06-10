@@ -113,35 +113,25 @@ td:first-child { text-align: center; padding-left: 12px; }
 
 /* MATCHES */
 .matches-wrap { padding: 0 1.5rem 4rem; }
-.matches-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.matches-table thead tr {
-  border-bottom: 2px solid var(--border);
+
+/* HISTORY CARDS */
+.history-list { display: flex; flex-direction: column; gap: 0; }
+.history-card {
+  display: grid; grid-template-columns: 1fr 56px 1fr;
+  align-items: center; gap: 6px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
 }
-.matches-table thead th {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  color: var(--muted); font-weight: 400; padding: 8px 6px;
-  text-transform: uppercase; letter-spacing: 0.05em;
-}
-.matches-table thead th:nth-child(1) { text-align: right; }
-.matches-table thead th:nth-child(2) { text-align: center; }
-.matches-table thead th:nth-child(3) { text-align: left; }
-.matches-table thead th:nth-child(4) { text-align: right; }
-.match-row { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-.match-row:hover { background: var(--surface); }
-.match-row td { padding: 9px 6px; vertical-align: middle; }
-.match-row .td-date {
-  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
-  color: var(--muted); white-space: nowrap;
-}
-.match-row .td-pair { font-weight: 500; }
-.match-row .td-pair.right { text-align: right; }
-.match-row .td-pair .winner { color: var(--accent); }
-.match-row .td-pair .loser  { color: var(--muted); }
-.match-row .td-score { text-align: center; white-space: nowrap; }
-.match-row .score-main { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em; line-height: 1; }
-.match-row .score-games { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); }
-.match-elo { font-family: 'IBM Plex Mono', monospace; font-size: 10px; display: block; margin-top: 1px; }
+.history-card:last-child { border-bottom: none; }
+.hc-pair { font-size: 13px; font-weight: 600; line-height: 1.3; }
+.hc-pair.left { text-align: right; }
+.hc-pair.right { text-align: left; }
+.hc-pair .winner { color: var(--accent); }
+.hc-pair .loser  { color: var(--muted); font-weight: 400; }
+.hc-elo { font-family: 'IBM Plex Mono', monospace; font-size: 10px; display: block; margin-top: 2px; }
 .elo-up { color: var(--green); } .elo-down { color: var(--red); }
+.hc-score { text-align: center; }
+.hc-score-main { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.05em; line-height: 1; }
+.hc-score-games { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); }
 
 /* UPCOMING MATCHES */
 .upcoming-day { margin-bottom: 2rem; }
@@ -1065,40 +1055,33 @@ async function loadMatches() {
     const historyEl = document.getElementById('matches-history');
     historyEl.innerHTML = '';
     if (history.length) {
-      const table = document.createElement('table');
-      table.className = 'matches-table';
-      table.innerHTML = `<thead><tr>
-        <th style="text-align:right">Пара A</th>
-        <th>Счёт</th>
-        <th>Пара Б</th>
-      </tr></thead>`;
-      const tbody = document.createElement('tbody');
+      const list = document.createElement('div');
+      list.className = 'history-list';
       [...history].reverse().forEach(m => {
         const aWon = m.winner === m.pairA;
         const bWon = m.winner === m.pairB;
         const eloAHtml = m.eloA !== 0
-          ? `<span class="match-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
+          ? `<span class="hc-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
         const eloBHtml = m.eloB !== 0
-          ? `<span class="match-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
-        const tr = document.createElement('tr');
-        tr.className = 'match-row';
-        tr.innerHTML = `
-          <td class="td-pair" style="text-align:right">
+          ? `<span class="hc-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
+        const card = document.createElement('div');
+        card.className = 'history-card';
+        card.innerHTML = `
+          <div class="hc-pair left">
             <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
             ${eloAHtml}
-          </td>
-          <td class="td-score">
-            <div class="score-main">${m.score || '—'}</div>
-            <div class="score-games">${m.games}</div>
-          </td>
-          <td class="td-pair">
+          </div>
+          <div class="hc-score">
+            <div class="hc-score-main">${m.score || '—'}</div>
+            <div class="hc-score-games">${m.games}</div>
+          </div>
+          <div class="hc-pair right">
             <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
             ${eloBHtml}
-          </td>`;
-        tbody.appendChild(tr);
+          </div>`;
+        list.appendChild(card);
       });
-      table.appendChild(tbody);
-      historyEl.appendChild(table);
+      historyEl.appendChild(list);
     }
 
     document.getElementById('matches-state').style.display = 'none';

@@ -148,22 +148,6 @@ td:first-child { text-align: center; padding-left: 12px; }
 .match-elo { font-family: 'IBM Plex Mono', monospace; font-size: 10px; display: block; margin-top: 1px; }
 .elo-up { color: var(--green); } .elo-down { color: var(--red); }
 
-/* MATCHES TABS */
-.matches-tabs {
-  display: flex; gap: 4px; margin-bottom: 1.2rem;
-  border-bottom: 2px solid var(--border); padding-bottom: 0;
-}
-.mtab {
-  background: none; border: none; cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
-  color: var(--muted); padding: 8px 16px 10px;
-  border-bottom: 2px solid transparent; margin-bottom: -2px;
-  transition: color 0.15s, border-color 0.15s; letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.mtab:hover { color: var(--text); }
-.mtab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
 /* UPCOMING MATCHES */
 .upcoming-day { margin-bottom: 1.5rem; }
 .upcoming-day-header {
@@ -338,6 +322,19 @@ td:first-child { text-align: center; padding-left: 12px; }
   background: var(--accent-dim); color: var(--accent);
 }
 
+/* FOOTER */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 1.2rem 1.5rem;
+  text-align: center;
+}
+.footer-rules-link {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); text-decoration: none; transition: color 0.2s;
+}
+.footer-rules-link:hover { color: var(--text); }
+
 /* MOBILE */
 .th-short { display: none; }
 .th-full  { display: inline; }
@@ -375,7 +372,6 @@ td:first-child { text-align: center; padding-left: 12px; }
   <a class="nav-btn" href="#rating">🏆 Рейтинг</a>
   <a class="nav-btn" href="#schedule">📅 Расписание</a>
   <a class="nav-btn" href="#history">📋 История</a>
-  <a class="nav-btn" href="#rules">📖 Регламент</a>
 </div>
 
 <div class="header">
@@ -513,13 +509,8 @@ td:first-child { text-align: center; padding-left: 12px; }
   <div class="matches-wrap">
     <div id="matches-state" class="state"><div class="spinner"></div>Загружаем матчи...</div>
     <div id="matches-tabs-wrap" style="display:none">
-      <div class="matches-tabs" style="display:flex;align-items:center;gap:8px">
-        <button class="mtab active" onclick="switchMatchTab('upcoming', this)">Предстоящие</button>
-        <button class="mtab" onclick="switchMatchTab('history', this)">История</button>
-        <button id="copy-upcoming-btn" title="Скопировать предстоящие матчи" onclick="copyUpcoming()" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--muted);font-size:16px;line-height:1;border-radius:4px;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">⎘</button>
-      </div>
       <div id="matches-upcoming"></div>
-      <div id="matches-history" style="display:none"></div>
+      <div id="matches-history"></div>
     </div>
   </div>
 </div>
@@ -607,6 +598,10 @@ td:first-child { text-align: center; padding-left: 12px; }
 </div>
 
 </div><!-- /container -->
+
+<div class="site-footer">
+  <a href="#rules" class="footer-rules-link">📖 Регламент</a>
+</div>
 
 <!-- PAIR MATCHES MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
@@ -726,23 +721,11 @@ function applyHash(hash) {
   if (page === 'rating') {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
   } else if (page === 'matches') {
-    el.innerHTML = tab === 'history'
-      ? '<span style="color:var(--accent)">История</span>'
-      : '<span style="color:var(--accent)">Расписание</span>';
+    el.innerHTML = '<span style="color:var(--accent)">Матчи</span>';
   } else if (page === 'rules') {
     el.innerHTML = '<span style="color:var(--accent)">Регламент</span>';
   } else {
     el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
-  }
-
-  if (page === 'matches' && tab) {
-    const mtabs = document.querySelectorAll('.mtab');
-    if (mtabs.length) {
-      mtabs.forEach(b => b.classList.remove('active'));
-      mtabs[tab === 'history' ? 1 : 0].classList.add('active');
-      document.getElementById('matches-upcoming').style.display = tab === 'upcoming' ? '' : 'none';
-      document.getElementById('matches-history').style.display  = tab === 'history'  ? '' : 'none';
-    }
   }
 }
 
@@ -1078,6 +1061,11 @@ async function loadMatches() {
     const historyEl = document.getElementById('matches-history');
     historyEl.innerHTML = '';
     if (history.length) {
+      const heading = document.createElement('div');
+      heading.className = 'upcoming-day-header';
+      heading.style.marginTop = '2rem';
+      heading.innerHTML = '<strong>История</strong>';
+      historyEl.appendChild(heading);
       const table = document.createElement('table');
       table.className = 'matches-table';
       table.innerHTML = `<thead><tr>
@@ -1117,13 +1105,6 @@ async function loadMatches() {
       table.appendChild(tbody);
       historyEl.appendChild(table);
     }
-
-    // Показываем вкладку с предстоящими если они есть, иначе историю
-    const defaultTab = upcoming.length ? 'upcoming' : 'history';
-    document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.mtab')[defaultTab === 'upcoming' ? 0 : 1].classList.add('active');
-    document.getElementById('matches-upcoming').style.display = defaultTab === 'upcoming' ? '' : 'none';
-    document.getElementById('matches-history').style.display  = defaultTab === 'history'  ? '' : 'none';
 
     document.getElementById('matches-state').style.display = 'none';
     document.getElementById('matches-tabs-wrap').style.display = '';

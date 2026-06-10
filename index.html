@@ -1070,11 +1070,6 @@ async function loadMatches() {
     const historyEl = document.getElementById('matches-history');
     historyEl.innerHTML = '';
     if (history.length) {
-      const heading = document.createElement('div');
-      heading.className = 'upcoming-day-header';
-      heading.style.marginTop = '2rem';
-      heading.innerHTML = '<strong>История</strong>';
-      historyEl.appendChild(heading);
       const table = document.createElement('table');
       table.className = 'matches-table';
       table.innerHTML = `<thead><tr>

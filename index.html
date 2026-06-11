@@ -410,7 +410,8 @@ td:first-child { text-align: center; padding-left: 12px; }
 .th-full  { display: inline; }
 @media (max-width: 640px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .header { padding: 1.5rem 1rem 1.2rem; }
+  .header { padding: 1.5rem 1rem 1.2rem; flex-direction: column; align-items: center; text-align: center; }
+  .header-title { font-size: clamp(1.6rem, 8vw, 2.2rem); }
   .table-wrap, .matches-wrap { padding-left: 1rem; padding-right: 1rem; }
   .hide-sm { display: none; }
   table { min-width: 0; width: 100%; table-layout: fixed; }

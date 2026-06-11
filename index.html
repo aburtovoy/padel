@@ -345,7 +345,13 @@ td:first-child { text-align: center; padding-left: 12px; }
   font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--accent); flex-shrink: 0;
 }
-.arv-range-label {
+.arv-name {
+  font-size: 11px; color: rgba(255,255,255,0.55); white-space: nowrap;
+  min-width: 130px; flex-shrink: 0;
+}
+.arv-you-name { color: var(--accent); font-weight: 500; }
+.arv-range .arv-name { color: rgba(255,255,255,0.7); }
+.arv-dim .arv-name { color: rgba(255,255,255,0.3); }
   font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase;
   letter-spacing: 0.08em; color: rgba(200,240,96,0.5);
   margin-top: 6px; text-align: right;
@@ -500,15 +506,21 @@ td:first-child { text-align: center; padding-left: 12px; }
           <div class="af-label">Подбор соперников</div>
           <div class="af-val">Соперник подбирается на основе рейтинга — в диапазоне ±5 позиций.</div>
           <div class="af-rating-vis">
-            <div class="arv-row arv-dim"><span class="arv-pos">1</span><span class="arv-bar"><span style="width:88%"></span></span></div>
-            <div class="arv-row arv-dim"><span class="arv-pos">2</span><span class="arv-bar"><span style="width:80%"></span></span></div>
-            <div class="arv-row arv-range"><span class="arv-pos">3</span><span class="arv-bar"><span style="width:74%"></span></span></div>
-            <div class="arv-row arv-range"><span class="arv-pos">4</span><span class="arv-bar"><span style="width:68%"></span></span></div>
-            <div class="arv-row arv-you"><span class="arv-pos">5</span><span class="arv-bar arv-bar-you"><span style="width:62%"></span></span><span class="arv-you-label">вы</span></div>
-            <div class="arv-row arv-range"><span class="arv-pos">6</span><span class="arv-bar"><span style="width:57%"></span></span></div>
-            <div class="arv-row arv-range"><span class="arv-pos">7</span><span class="arv-bar"><span style="width:52%"></span></span></div>
-            <div class="arv-row arv-dim"><span class="arv-pos">8</span><span class="arv-bar"><span style="width:46%"></span></span></div>
-            <div class="arv-row arv-dim"><span class="arv-pos">9</span><span class="arv-bar"><span style="width:40%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">1</span><span class="arv-name">Корнеев / Лапшин</span><span class="arv-bar"><span style="width:92%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">2</span><span class="arv-name">Фролов / Щукин</span><span class="arv-bar"><span style="width:85%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">3</span><span class="arv-name">Емелин / Зотов</span><span class="arv-bar"><span style="width:79%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">4</span><span class="arv-name">Дьячков / Усов</span><span class="arv-bar"><span style="width:74%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">5</span><span class="arv-name">Малинин / Рогов</span><span class="arv-bar"><span style="width:69%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">6</span><span class="arv-name">Нечаев / Птицын</span><span class="arv-bar"><span style="width:64%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">7</span><span class="arv-name">Аксёнов / Куров</span><span class="arv-bar"><span style="width:59%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">8</span><span class="arv-name">Беляев / Старков</span><span class="arv-bar"><span style="width:55%"></span></span></div>
+            <div class="arv-row arv-you"><span class="arv-pos">9</span><span class="arv-name arv-you-name">Тимошенко / Заломов</span><span class="arv-bar arv-bar-you"><span style="width:51%"></span></span><span class="arv-you-label">вы</span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">10</span><span class="arv-name">Горин / Панов</span><span class="arv-bar"><span style="width:47%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">11</span><span class="arv-name">Волков / Жданов</span><span class="arv-bar"><span style="width:43%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">12</span><span class="arv-name">Карпов / Сидоров</span><span class="arv-bar"><span style="width:39%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">13</span><span class="arv-name">Ларин / Моисеев</span><span class="arv-bar"><span style="width:35%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">14</span><span class="arv-name">Борисов / Крылов</span><span class="arv-bar"><span style="width:30%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">15</span><span class="arv-name">Власов / Громов</span><span class="arv-bar"><span style="width:25%"></span></span></div>
             <div class="arv-range-label">возможные соперники</div>
           </div>
         </div>

@@ -315,6 +315,42 @@ td:first-child { text-align: center; padding-left: 12px; }
   font-weight: 600; color: #f0ede8; margin-bottom: 2px;
 }
 
+.af-rating-vis {
+  margin-top: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 12px 14px 10px;
+  position: relative;
+}
+.arv-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 4px;
+}
+.arv-pos {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: rgba(255,255,255,0.3); width: 12px; text-align: right; flex-shrink: 0;
+}
+.arv-bar {
+  flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden;
+}
+.arv-bar span { display: block; height: 100%; border-radius: 3px; background: rgba(255,255,255,0.18); }
+.arv-dim .arv-pos { opacity: 0.4; }
+.arv-dim .arv-bar span { background: rgba(255,255,255,0.1); }
+.arv-range .arv-pos { color: rgba(200,240,96,0.7); }
+.arv-range .arv-bar span { background: rgba(200,240,96,0.25); }
+.arv-you .arv-pos { color: var(--accent); font-weight: 600; }
+.arv-bar-you span { background: var(--accent) !important; }
+.arv-you-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent); flex-shrink: 0;
+}
+.arv-range-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.08em; color: rgba(200,240,96,0.5);
+  margin-top: 6px; text-align: right;
+}
+
 /* RULES PAGE */
 .rules-wrap { padding: 2rem 1.5rem 4rem; max-width: 680px; }
 .rules-section { margin-bottom: 2.5rem; }
@@ -463,12 +499,17 @@ td:first-child { text-align: center; padding-left: 12px; }
           </div>
           <div class="af-label">Подбор соперников</div>
           <div class="af-val">Соперник подбирается на основе рейтинга — в диапазоне ±5 позиций.</div>
-          <div class="af-match-example">
-            <div class="af-me-title">⚔️ Емелин/Зотов vs Тимошенко/Заломов</div>
-            <div>🏟 Клуб: Арена</div>
-            <div>📅 Понедельник, 1 июня, 20:00</div>
-            <div>👤 Ответственный за бронь: Тимошенко/Заломов</div>
-            <div>⏳ Ждём подтверждения от Емелин/Зотов</div>
+          <div class="af-rating-vis">
+            <div class="arv-row arv-dim"><span class="arv-pos">1</span><span class="arv-bar"><span style="width:88%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">2</span><span class="arv-bar"><span style="width:80%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">3</span><span class="arv-bar"><span style="width:74%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">4</span><span class="arv-bar"><span style="width:68%"></span></span></div>
+            <div class="arv-row arv-you"><span class="arv-pos">5</span><span class="arv-bar arv-bar-you"><span style="width:62%"></span></span><span class="arv-you-label">вы</span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">6</span><span class="arv-bar"><span style="width:57%"></span></span></div>
+            <div class="arv-row arv-range"><span class="arv-pos">7</span><span class="arv-bar"><span style="width:52%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">8</span><span class="arv-bar"><span style="width:46%"></span></span></div>
+            <div class="arv-row arv-dim"><span class="arv-pos">9</span><span class="arv-bar"><span style="width:40%"></span></span></div>
+            <div class="arv-range-label">возможные соперники</div>
           </div>
         </div>
 

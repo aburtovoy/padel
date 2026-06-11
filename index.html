@@ -1125,7 +1125,13 @@ async function loadMatches() {
         ? String(dtParts[4]).padStart(2,'0') + ':' + String(dtParts[5]).padStart(2,'0')
         : '';
       const club = String(c[9]?.v || '').trim();
-      const m = { num: num_, date, pairA, pairB, score, games, winner, eloA, eloB, time, club };
+      // Нормализуем ключ группировки: берём только дату из сырого значения
+      let dateKey = date;
+      if (dtParts) {
+        const yr = parseInt(dtParts[1]), mo = parseInt(dtParts[2]) + 1, dy = parseInt(dtParts[3]);
+        dateKey = `${String(dy).padStart(2,'0')}.${String(mo).padStart(2,'0')}.${yr}`;
+      }
+      const m = { num: num_, date, dateKey, pairA, pairB, score, games, winner, eloA, eloB, time, club };
       matchesData.push(m);
       if (!winner) upcoming.push(m); else history.push(m);
     });
@@ -1136,11 +1142,18 @@ async function loadMatches() {
     if (!upcoming.length) {
       upcomingEl.innerHTML = '<div class="no-upcoming">Предстоящих матчей нет</div>';
     } else {
-      // Группируем по дате
+      // Группируем по дате (только дата, без времени)
+      function extractDateOnly(dateStr) {
+        if (!dateStr) return 'Без даты';
+        const p = dateStr.match(/(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{2,4})/);
+        if (!p) return dateStr;
+        const yr = p[3].length === 2 ? 2000 + parseInt(p[3]) : parseInt(p[3]);
+        return `${p[1].padStart(2,'0')}.${p[2].padStart(2,'0')}.${yr}`;
+      }
       const byDay = {};
       const dayOrder = [];
       upcoming.forEach(m => {
-        const key = m.date || 'Без даты';
+        const key = extractDateOnly(m.date);
         if (!byDay[key]) { byDay[key] = []; dayOrder.push(key); }
         byDay[key].push(m);
       });

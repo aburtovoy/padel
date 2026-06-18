@@ -796,7 +796,9 @@ let intensityFilter = 'all'; // 'all' | 'interesting' | 'medium' | 'blowout'
    Категории:
      - интересный: avg_diff <= 2, ИЛИ матч дошёл до 3-го сета
        (счёт 1:1 после двух сетов сам по себе значит, что исход не был предрешён)
-     - разгром: avg_diff >= 4 (для двусетовых матчей)
+     - разгром: avg_diff >= 4 И при этом НЕТ ни одного "близкого" сета (diff <= 3)
+       (если хотя бы один сет был близким, пара хотя бы раз зацепилась за игру —
+       это уже не чистый разгром, например 7:5, 6:0)
      - средний: всё остальное
 */
 function getMatchIntensity(gamesStr) {
@@ -817,10 +819,12 @@ function getMatchIntensity(gamesStr) {
   const went3 = diffs.length === 3;
   const deciderDiff = went3 ? diffs[2] : null;
 
+  const hasCloseSet = diffs.some(d => d <= 3);
+
   let base;
   if (avgDiff <= 2) base = 'interesting';
   else if (avgDiff < 4) base = 'medium';
-  else base = 'blowout';
+  else base = hasCloseSet ? 'medium' : 'blowout';
 
   // Любой матч, дошедший до 3-го сета, считается интересным:
   // счёт 1:1 после двух сетов сам по себе значит, что исход не был предрешён.

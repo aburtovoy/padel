@@ -794,9 +794,9 @@ let intensityFilter = 'all'; // 'all' | 'interesting' | 'medium' | 'blowout'
    Парсим гейм-счёт по сетам, считаем разницу геймов в каждом сете.
    avg_diff = средняя разница геймов по сетам.
    Категории:
-     - интересный: avg_diff <= 2, ИЛИ матч дошёл до 3-го сета и решающий сет
-       сыграли с разницей <= 3 геймов (борьба до конца, исход не предрешён)
-     - разгром: avg_diff > 4
+     - интересный: avg_diff <= 2, ИЛИ матч дошёл до 3-го сета
+       (счёт 1:1 после двух сетов сам по себе значит, что исход не был предрешён)
+     - разгром: avg_diff >= 4 (для двусетовых матчей)
      - средний: всё остальное
 */
 function getMatchIntensity(gamesStr) {
@@ -819,11 +819,13 @@ function getMatchIntensity(gamesStr) {
 
   let base;
   if (avgDiff <= 2) base = 'interesting';
-  else if (avgDiff <= 4) base = 'medium';
+  else if (avgDiff < 4) base = 'medium';
   else base = 'blowout';
 
+  // Любой матч, дошедший до 3-го сета, считается интересным:
+  // счёт 1:1 после двух сетов сам по себе значит, что исход не был предрешён.
   let category = base;
-  if (went3 && deciderDiff <= 3 && base !== 'blowout') category = 'interesting';
+  if (went3) category = 'interesting';
 
   return { category, avgDiff, deciderDiff };
 }

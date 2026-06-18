@@ -139,17 +139,6 @@ td:first-child { text-align: center; padding-left: 12px; }
   background: rgba(255,255,255,0.05); border-radius: 4px;
   padding: 2px 5px; color: var(--text); font-weight: 500; white-space: nowrap;
 }
-.hc-badge {
-  grid-column: 1 / -1; text-align: center; margin-top: 6px;
-}
-.hc-badge span {
-  display: inline-block; font-family: 'IBM Plex Mono', monospace;
-  font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
-  padding: 2px 8px; border-radius: 10px;
-}
-.badge-interesting { background: var(--accent-dim); color: var(--accent); }
-.badge-medium { background: rgba(255,255,255,0.06); color: var(--muted); }
-.badge-blowout { background: var(--red-dim); color: var(--red); }
 
 /* INTENSITY FILTERS */
 .intensity-filters {
@@ -878,12 +867,6 @@ function setIntensityFilter(filter) {
 
 let historyMatches = []; // история сыгранных матчей (с результатом)
 
-const INTENSITY_BADGE = {
-  interesting: '<div class="hc-badge"><span class="badge-interesting">🔥 Интересный</span></div>',
-  medium:      '<div class="hc-badge"><span class="badge-medium">Средний</span></div>',
-  blowout:     '<div class="hc-badge"><span class="badge-blowout">💤 Разгром</span></div>',
-};
-
 function renderHistoryList() {
   const listEl = document.getElementById('matches-history-list');
   if (!listEl) return;
@@ -909,8 +892,6 @@ function renderHistoryList() {
       ? `<span class="hc-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
     const eloBHtml = m.eloB !== 0
       ? `<span class="hc-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
-    const intensity = getMatchIntensity(m.games);
-    const badgeHtml = intensity ? (INTENSITY_BADGE[intensity.category] || '') : '';
     const card = document.createElement('div');
     card.className = 'history-card';
     card.innerHTML = `
@@ -925,8 +906,7 @@ function renderHistoryList() {
       <div class="hc-pair right">
         <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
         ${eloBHtml}
-      </div>
-      ${badgeHtml}`;
+      </div>`;
     list.appendChild(card);
   });
   listEl.appendChild(list);

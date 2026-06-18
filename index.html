@@ -132,6 +132,38 @@ td:first-child { text-align: center; padding-left: 12px; }
 .hc-score { text-align: center; }
 .hc-score-main { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.05em; line-height: 1; }
 .hc-score-games { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); }
+.hc-badge {
+  grid-column: 1 / -1; text-align: center; margin-top: 6px;
+}
+.hc-badge span {
+  display: inline-block; font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 2px 8px; border-radius: 10px;
+}
+.badge-interesting { background: var(--accent-dim); color: var(--accent); }
+.badge-medium { background: rgba(255,255,255,0.06); color: var(--muted); }
+.badge-blowout { background: var(--red-dim); color: var(--red); }
+
+/* INTENSITY FILTERS */
+.intensity-filters {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 0 0 1.2rem; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;
+}
+.intensity-filter-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  letter-spacing: 0.02em; padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--muted); cursor: pointer; transition: border-color 0.15s, color 0.15s;
+}
+.intensity-filter-btn:hover { color: var(--text); }
+.intensity-filter-btn .if-pct { font-weight: 700; color: var(--text); }
+.intensity-filter-btn .if-count { color: var(--muted); }
+.intensity-filter-btn.active { border-color: var(--accent); color: var(--accent); }
+.intensity-filter-btn.active .if-pct { color: var(--accent); }
+.intensity-filter-btn[data-filter="interesting"].active { border-color: var(--accent); }
+.intensity-filter-btn[data-filter="blowout"].active { border-color: var(--red); color: var(--red); }
+.intensity-filter-btn[data-filter="blowout"].active .if-pct { color: var(--red); }
 
 /* UPCOMING MATCHES */
 .upcoming-day { margin-bottom: 2rem; }
@@ -633,7 +665,10 @@ td:first-child { text-align: center; padding-left: 12px; }
     <div id="matches-state" class="state"><div class="spinner"></div>Загружаем матчи...</div>
     <div id="matches-tabs-wrap" style="display:none">
       <div id="matches-upcoming"></div>
-      <div id="matches-history"></div>
+      <div id="matches-history">
+        <div id="intensity-filters" class="intensity-filters"></div>
+        <div id="matches-history-list"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -746,6 +781,144 @@ const SHEET_ID = '1ckry8Tz1CDlTMvZ_Kh0wUtmKqkWLnNWsbOj82-cex7s';
 // Sorting state
 let ratingData = [];
 let matchesData = []; // all parsed matches
+let intensityFilter = 'all'; // 'all' | 'interesting' | 'medium' | 'blowout'
+
+/* ── МЕТРИКА "ИНТЕРЕСНОСТИ" МАТЧА ──
+   Парсим гейм-счёт по сетам, считаем разницу геймов в каждом сете.
+   avg_diff = средняя разница геймов по сетам.
+   Категории:
+     - интересный: avg_diff <= 2, ИЛИ матч дошёл до 3-го сета и решающий сет
+       сыграли с разницей <= 3 геймов (борьба до конца, исход не предрешён)
+     - разгром: avg_diff > 4
+     - средний: всё остальное
+*/
+function getMatchIntensity(gamesStr) {
+  if (!gamesStr) return null;
+  const cleaned = gamesStr.replace(/\s+/g, '');
+  const sets = cleaned.split(',').filter(Boolean);
+  const diffs = [];
+  for (const s of sets) {
+    const parts = s.split(':');
+    if (parts.length !== 2) return null;
+    const a = parseInt(parts[0], 10), b = parseInt(parts[1], 10);
+    if (isNaN(a) || isNaN(b)) return null;
+    diffs.push(Math.abs(a - b));
+  }
+  if (!diffs.length) return null;
+
+  const avgDiff = diffs.reduce((s, d) => s + d, 0) / diffs.length;
+  const went3 = diffs.length === 3;
+  const deciderDiff = went3 ? diffs[2] : null;
+
+  let base;
+  if (avgDiff <= 2) base = 'interesting';
+  else if (avgDiff <= 4) base = 'medium';
+  else base = 'blowout';
+
+  let category = base;
+  if (went3 && deciderDiff <= 3 && base !== 'blowout') category = 'interesting';
+
+  return { category, avgDiff, deciderDiff };
+}
+
+function renderIntensityFilters(history) {
+  const wrap = document.getElementById('intensity-filters');
+  if (!wrap) return;
+
+  const counts = { all: history.length, interesting: 0, medium: 0, blowout: 0 };
+  history.forEach(m => {
+    const intensity = getMatchIntensity(m.games);
+    if (intensity) counts[intensity.category]++;
+  });
+
+  const total = history.length || 1;
+  const defs = [
+    { key: 'all', label: 'Все', icon: '' },
+    { key: 'interesting', label: 'Интересные', icon: '🔥' },
+    { key: 'medium', label: 'Средние', icon: '' },
+    { key: 'blowout', label: 'Разгромы', icon: '💤' },
+  ];
+
+  wrap.innerHTML = defs.map(d => {
+    const count = counts[d.key];
+    const pct = Math.round(count / total * 100);
+    const active = intensityFilter === d.key ? ' active' : '';
+    return `<button class="intensity-filter-btn${active}" data-filter="${d.key}" onclick="setIntensityFilter('${d.key}')">
+        ${d.icon ? d.icon + ' ' : ''}${d.label}
+        <span class="if-pct">${pct}%</span>
+        <span class="if-count">(${count})</span>
+      </button>`;
+  }).join('');
+}
+
+function setIntensityFilter(filter) {
+  intensityFilter = filter;
+  renderHistoryList();
+  const wrap = document.getElementById('intensity-filters');
+  if (wrap) {
+    wrap.querySelectorAll('.intensity-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+  }
+}
+
+let historyMatches = []; // история сыгранных матчей (с результатом)
+
+const INTENSITY_BADGE = {
+  interesting: '<div class="hc-badge"><span class="badge-interesting">🔥 Интересный</span></div>',
+  medium:      '<div class="hc-badge"><span class="badge-medium">Средний</span></div>',
+  blowout:     '<div class="hc-badge"><span class="badge-blowout">💤 Разгром</span></div>',
+};
+
+function renderHistoryList() {
+  const listEl = document.getElementById('matches-history-list');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+
+  const filtered = historyMatches.filter(m => {
+    if (intensityFilter === 'all') return true;
+    const intensity = getMatchIntensity(m.games);
+    return intensity && intensity.category === intensityFilter;
+  });
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="no-upcoming">Матчей в этой категории нет</div>';
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'history-list';
+  [...filtered].reverse().forEach(m => {
+    const aWon = m.winner === m.pairA;
+    const bWon = m.winner === m.pairB;
+    const eloAHtml = m.eloA !== 0
+      ? `<span class="hc-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
+    const eloBHtml = m.eloB !== 0
+      ? `<span class="hc-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
+    const intensity = getMatchIntensity(m.games);
+    const badgeHtml = intensity ? (INTENSITY_BADGE[intensity.category] || '') : '';
+    const card = document.createElement('div');
+    card.className = 'history-card';
+    card.innerHTML = `
+      <div class="hc-pair left">
+        <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
+        ${eloAHtml}
+      </div>
+      <div class="hc-score">
+        <div class="hc-score-main">${m.score || '—'}</div>
+        <div class="hc-score-games">${m.games}</div>
+      </div>
+      <div class="hc-pair right">
+        <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
+        ${eloBHtml}
+      </div>
+      ${badgeHtml}`;
+    list.appendChild(card);
+  });
+  listEl.appendChild(list);
+}
+
+
 let sortCol = null;   // 'wins' | 'losses' | 'matches'
 let sortDir = 'desc'; // 'asc' | 'desc'
 
@@ -1202,37 +1375,9 @@ async function loadMatches() {
     }
 
     // ── ИСТОРИЯ ──
-    const historyEl = document.getElementById('matches-history');
-    historyEl.innerHTML = '';
-    if (history.length) {
-      const list = document.createElement('div');
-      list.className = 'history-list';
-      [...history].reverse().forEach(m => {
-        const aWon = m.winner === m.pairA;
-        const bWon = m.winner === m.pairB;
-        const eloAHtml = m.eloA !== 0
-          ? `<span class="hc-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
-        const eloBHtml = m.eloB !== 0
-          ? `<span class="hc-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
-        const card = document.createElement('div');
-        card.className = 'history-card';
-        card.innerHTML = `
-          <div class="hc-pair left">
-            <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
-            ${eloAHtml}
-          </div>
-          <div class="hc-score">
-            <div class="hc-score-main">${m.score || '—'}</div>
-            <div class="hc-score-games">${m.games}</div>
-          </div>
-          <div class="hc-pair right">
-            <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
-            ${eloBHtml}
-          </div>`;
-        list.appendChild(card);
-      });
-      historyEl.appendChild(list);
-    }
+    historyMatches = history;
+    renderIntensityFilters(history);
+    renderHistoryList();
 
     document.getElementById('matches-state').style.display = 'none';
     document.getElementById('matches-tabs-wrap').style.display = '';

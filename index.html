@@ -172,6 +172,22 @@ td:first-child { text-align: center; padding-left: 12px; }
 .intensity-filter-btn[data-filter="blowout"].active { border-color: var(--red); color: var(--red); }
 .intensity-filter-btn[data-filter="blowout"].active .if-pct { color: var(--red); }
 
+/* INTENSITY TARGETS */
+.intensity-targets {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 0.9rem 0 1.2rem; margin-top: -0.4rem;
+}
+.it-row {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted);
+}
+.it-dot { width: 14px; text-align: center; color: var(--muted); }
+.it-met .it-dot { color: var(--green); }
+.it-label { color: var(--text); font-weight: 600; min-width: 84px; }
+.it-target { color: var(--muted); }
+.it-actual { margin-left: auto; color: var(--text); font-weight: 600; }
+.it-met .it-actual { color: var(--green); }
+
 /* UPCOMING MATCHES */
 .upcoming-day { margin-bottom: 2rem; }
 .upcoming-day-header {
@@ -674,6 +690,7 @@ td:first-child { text-align: center; padding-left: 12px; }
       <div id="matches-upcoming"></div>
       <div id="matches-history">
         <div id="intensity-filters" class="intensity-filters"></div>
+        <div id="intensity-targets" class="intensity-targets"></div>
         <div id="matches-history-list"></div>
       </div>
     </div>
@@ -862,7 +879,35 @@ function renderIntensityFilters(history) {
         <span class="if-count">(${count})</span>
       </button>`;
   }).join('');
+
+  renderIntensityTargets(counts, total);
 }
+
+/* ── ЦЕЛЕВЫЕ ПОКАЗАТЕЛИ УСТОЙЧИВОЙ ЛИГИ ──
+   Интересные > 40%, Средние > 40%, Разгромы < 20%
+*/
+const INTENSITY_TARGETS = {
+  interesting: { label: 'Интересные', op: '>', value: 40 },
+  medium:      { label: 'Средние',    op: '>', value: 40 },
+  blowout:     { label: 'Разгромы',   op: '<', value: 20 },
+};
+
+function renderIntensityTargets(counts, total) {
+  const el = document.getElementById('intensity-targets');
+  if (!el) return;
+
+  el.innerHTML = Object.entries(INTENSITY_TARGETS).map(([key, t]) => {
+    const pct = Math.round(counts[key] / total * 100);
+    const met = t.op === '>' ? pct > t.value : pct < t.value;
+    return `<div class="it-row${met ? ' it-met' : ''}">
+        <span class="it-dot">${met ? '✓' : '·'}</span>
+        <span class="it-label">${t.label}</span>
+        <span class="it-target">цель ${t.op}${t.value}%</span>
+        <span class="it-actual">сейчас ${pct}%</span>
+      </div>`;
+  }).join('');
+}
+
 
 function setIntensityFilter(filter) {
   intensityFilter = filter;

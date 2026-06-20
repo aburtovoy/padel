@@ -1135,7 +1135,7 @@ async function loadRating() {
       fetchSheet('Матчи'),
     ]);
 
-    // --- Стартовый ELO из «Команды» (col A = пара, col D = стартовый ELO) ---
+    // --- Стартовый ELO из «Команды» (col A = пара, col E = стартовый ELO) ---
     const eloMap    = {};
     const winsMap   = {};
     const lossesMap = {};
@@ -1143,7 +1143,7 @@ async function loadRating() {
     teamRows.forEach(row => {
       const c    = row.c || [];
       const pair = String(c[0]?.v || '').trim();
-      const elo  = num(c[3]?.f ?? c[3]?.v);
+      const elo  = num(c[4]?.f ?? c[4]?.v);
       if (pair && pair.includes('/')) {
         eloMap[pair]    = elo > 0 ? elo : 1200;
         winsMap[pair]   = 0;

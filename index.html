@@ -178,16 +178,24 @@ td:first-child { text-align: center; padding-left: 12px; }
 }
 .upcoming-day-header .uph-weekday::before { content: '·'; margin-right: 8px; color: var(--border); }
 .upcoming-match {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 8px; padding: 14px 12px; text-align: center;
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 6px 8px; padding: 12px 12px;
   background: var(--card-bg, rgba(255,255,255,0.02));
   border: 1px solid var(--border); border-radius: 10px;
   margin-bottom: 8px;
 }
 .upcoming-match:last-child { margin-bottom: 0; }
-.upcoming-pair { font-size: 14px; font-weight: 500; line-height: 1.35; color: var(--text); word-break: break-word; }
-.upcoming-meta { font-size: 12px; color: var(--text); opacity: 0.75; margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--border); width: 100%; }
+.upcoming-pair {
+  flex: 1 1 0; min-width: 0; font-size: 13px; font-weight: 500;
+  color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.upcoming-pair.right { text-align: right; }
+.upcoming-meta {
+  flex-basis: 100%; order: 99; font-size: 12px; color: var(--text); opacity: 0.75;
+  margin-top: 2px; padding-top: 6px; border-top: 1px dashed var(--border); text-align: center;
+}
 .upcoming-vs {
+  flex: 0 0 auto;
   font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 700;
   color: var(--accent); letter-spacing: 0.05em;
   background: var(--accent-dim); border-radius: 4px; padding: 4px 8px;
@@ -461,6 +469,9 @@ td:first-child { text-align: center; padding-left: 12px; }
   .pair-name { font-size: 12px; }
   .elo-val { font-size: 1rem; }
   .elo-delta { font-size: 9px; }
+  .upcoming-pair { font-size: 11.5px; }
+  .upcoming-match { padding: 10px 8px; gap: 4px 6px; }
+  .upcoming-vs { font-size: 9px; padding: 3px 6px; }
   .th-short { display: inline; }
   .th-full  { display: none; }
   .matches-table thead th, .match-row td { padding: 7px 3px; }
@@ -1377,7 +1388,7 @@ async function loadMatches() {
           div.className = 'upcoming-match';
           const meta = [m.time ? '🕐 ' + m.time : '', m.club ? '📍 ' + m.club : ''].filter(Boolean).join(' · ');
           div.innerHTML = `
-            <div class="upcoming-pair">${m.pairA}</div>
+            <div class="upcoming-pair right">${m.pairA}</div>
             <div class="upcoming-vs">vs</div>
             <div class="upcoming-pair">${m.pairB}</div>
             ${meta ? `<div class="upcoming-meta">${meta}</div>` : ''}`;

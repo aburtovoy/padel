@@ -1004,11 +1004,11 @@ function applyHash(hash) {
   });
 
   const sr = document.getElementById('stats-row');
-  sr.style.display = page === 'rating' ? '' : 'none';
+  sr.style.display = 'none';
 
   const el = document.getElementById('page-subtitle');
   if (page === 'rating') {
-    el.innerHTML = 'Волгоградская<br><span style="color:var(--accent)">падел лига</span>';
+    el.innerHTML = '<span style="color:var(--accent)">Рейтинг</span>';
   } else if (page === 'matches') {
     el.innerHTML = tab === 'history'
       ? '<span style="color:var(--accent)">История</span>'

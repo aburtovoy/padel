@@ -1135,10 +1135,17 @@ async function loadRating() {
       fetchSheet('Матчи'),
     ]);
 
-    // --- Стартовый ELO из «Команды» (col A = пара, col E = стартовый ELO) ---
-    const eloMap    = {};
-    const winsMap   = {};
-    const lossesMap = {};
+    // --- Стартовый ELO из «Команды» (col A = пара, col E = стартовый ELO, col J = снялся) ---
+    const eloMap     = {};
+    const winsMap    = {};
+    const lossesMap  = {};
+    const withdrawn  = new Set();
+
+    function isWithdrawn(v) {
+      const s = String(v || '').trim().toLowerCase();
+      if (!s) return false;
+      return !['нет', 'no', 'false', '0'].includes(s);
+    }
 
     teamRows.forEach(row => {
       const c    = row.c || [];
@@ -1148,6 +1155,7 @@ async function loadRating() {
         eloMap[pair]    = elo > 0 ? elo : 1200;
         winsMap[pair]   = 0;
         lossesMap[pair] = 0;
+        if (isWithdrawn(c[9]?.v)) withdrawn.add(pair);
       }
     });
 
@@ -1182,15 +1190,17 @@ async function loadRating() {
         else if (winner === pairB) { winsMap[pairB]++; lossesMap[pairA]++; }
       });
 
-    // --- Итоговый рейтинг ---
-    ratingData = Object.keys(eloMap).map(pair => ({
-      pair,
-      elo:       eloMap[pair],
-      lastDelta: lastDeltaMap[pair] || 0,
-      wins:      winsMap[pair]   || 0,
-      losses:    lossesMap[pair] || 0,
-      matches:   (winsMap[pair] || 0) + (lossesMap[pair] || 0),
-    }));
+    // --- Итоговый рейтинг (снятые команды не показываем) ---
+    ratingData = Object.keys(eloMap)
+      .filter(pair => !withdrawn.has(pair))
+      .map(pair => ({
+        pair,
+        elo:       eloMap[pair],
+        lastDelta: lastDeltaMap[pair] || 0,
+        wins:      winsMap[pair]   || 0,
+        losses:    lossesMap[pair] || 0,
+        matches:   (winsMap[pair] || 0) + (lossesMap[pair] || 0),
+      }));
 
     ratingData.sort((a, b) => b.elo - a.elo);
     ratingData.forEach((r, i) => r.place = i + 1);

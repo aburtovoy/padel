@@ -1376,7 +1376,7 @@ async function loadMatches() {
       const [hh, mm] = (m.time || '00:00').split(':').map(Number);
       return new Date(yr, parseInt(p[2]) - 1, parseInt(p[1]), hh || 0, mm || 0).getTime();
     }
-    history.sort((a, b) => historyTimestamp(b) - historyTimestamp(a));
+    history.sort((a, b) => historyTimestamp(a) - historyTimestamp(b));
     historyMatches = history;
     renderIntensityFilters(history);
     renderHistoryList();

@@ -1102,9 +1102,8 @@ function renderRating() {
     const rc = origPlace===1?'top1':origPlace===2?'top2':origPlace===3?'top3':'';
     const total = ratingData.length;
     const zoneGreen = !sortCol && place <= 8;
-    const zoneRed   = !sortCol && place > total - 3;
     const tr = document.createElement('tr');
-    const classes = [rc && !sortCol ? rc : '', zoneGreen ? 'zone-green' : '', zoneRed ? 'zone-red' : ''].filter(Boolean).join(' ');
+    const classes = [rc && !sortCol ? rc : '', zoneGreen ? 'zone-green' : ''].filter(Boolean).join(' ');
     if (classes) tr.className = classes;
     tr.innerHTML = `
       <td>${ph}</td>

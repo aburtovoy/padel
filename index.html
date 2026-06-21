@@ -139,6 +139,10 @@ td:first-child { text-align: center; padding-left: 12px; }
   background: rgba(255,255,255,0.05); border-radius: 4px;
   padding: 2px 5px; color: var(--text); font-weight: 500; white-space: nowrap;
 }
+.hc-date {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted);
+  margin-top: 5px; white-space: nowrap;
+}
 
 /* INTENSITY FILTERS */
 .intensity-filters {
@@ -952,42 +956,33 @@ function openModal(pair, filter) {
   if (!filtered.length) {
     body.innerHTML = '<div class="modal-empty">Матчей нет</div>';
   } else {
-    body.innerHTML = '';
-    const table = document.createElement('table');
-    table.className = 'matches-table';
-    table.innerHTML = `<thead><tr>
-      <th>#</th>
-      <th style="text-align:right">Пара A</th>
-      <th>Счёт</th>
-      <th>Пара Б</th>
-      <th style="text-align:right">Дата</th>
-    </tr></thead>`;
-    const tbody = document.createElement('tbody');
+    const list = document.createElement('div');
+    list.className = 'history-list';
     [...filtered].reverse().forEach(m => {
       const aWon = m.winner === m.pairA;
       const bWon = m.winner === m.pairB;
-      const eloAHtml = m.eloA !== 0 ? `<span class="match-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
-      const eloBHtml = m.eloB !== 0 ? `<span class="match-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
-      const tr = document.createElement('tr');
-      tr.className = 'match-row';
-      tr.innerHTML = `
-        <td class="td-pair" style="text-align:right">
+      const eloAHtml = m.eloA !== 0 ? `<span class="hc-elo ${m.eloA>0?'elo-up':'elo-down'}">${m.eloA>0?'+':''}${m.eloA}</span>` : '';
+      const eloBHtml = m.eloB !== 0 ? `<span class="hc-elo ${m.eloB>0?'elo-up':'elo-down'}">${m.eloB>0?'+':''}${m.eloB}</span>` : '';
+      const card = document.createElement('div');
+      card.className = 'history-card';
+      card.innerHTML = `
+        <div class="hc-pair left">
           <span class="${aWon?'winner':bWon?'loser':''}">${m.pairA}</span>
           ${eloAHtml}
-        </td>
-        <td class="td-score">
-          <div class="score-main">${m.score || '—'}</div>
-          <div class="score-games">${m.games}</div>
-        </td>
-        <td class="td-pair">
+        </div>
+        <div class="hc-score">
+          <div class="hc-score-main">${m.score || '—'}</div>
+          <div class="hc-score-games">${(m.games || '').replace(/\s+/g,'').split(',').filter(Boolean).map(s => `<span class="set">${s}</span>`).join('')}</div>
+          <div class="hc-date">${formatShortDate(m.dateKey)}</div>
+        </div>
+        <div class="hc-pair right">
           <span class="${bWon?'winner':aWon?'loser':''}">${m.pairB}</span>
           ${eloBHtml}
-        </td>
-        <td class="td-date">${m.date}</td>`;
-      tbody.appendChild(tr);
+        </div>`;
+      list.appendChild(card);
     });
-    table.appendChild(tbody);
-    body.appendChild(table);
+    body.innerHTML = '';
+    body.appendChild(list);
   }
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1058,6 +1053,17 @@ window.addEventListener('hashchange', () => applyHash(window.location.hash));
 function num(v) {
   if (v === null || v === undefined || v === '') return 0;
   return parseFloat(String(v).replace(/\s/g,'').replace(',','.')) || 0;
+}
+
+const RU_MONTHS_SHORT = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+function formatShortDate(dateKey) {
+  // dateKey ожидается в формате DD.MM.YYYY
+  const p = String(dateKey || '').match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
+  if (!p) return dateKey || '';
+  const d = parseInt(p[1]), mo = parseInt(p[2]) - 1;
+  const yr = p[3].length === 2 ? p[3] : p[3].slice(-2);
+  if (!RU_MONTHS_SHORT[mo]) return dateKey;
+  return `${d} ${RU_MONTHS_SHORT[mo]} ${yr}`;
 }
 
 async function fetchSheet(sheetName) {

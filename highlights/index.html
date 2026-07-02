@@ -76,6 +76,34 @@ body {
   width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border);
   border-radius: 16px; padding: 1.5rem; margin-bottom: 1.2rem;
 }
+.match-header {
+  width: 100%; max-width: 420px; display: flex; align-items: center; justify-content: space-between;
+  gap: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1rem 1.1rem; margin-bottom: 1.2rem;
+}
+.mh-info { min-width: 0; }
+.mh-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;
+}
+.mh-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.mh-meta {
+  font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-top: 0.3rem;
+}
+.edit-btn {
+  flex-shrink: 0; width: 42px; height: 42px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; font-size: 17px; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+}
+.edit-btn:active { transform: scale(0.94); }
+#match-select {
+  width: 100%; max-width: 420px; background: var(--surface); color: var(--text);
+  border: 1px solid var(--accent); border-radius: 12px; padding: 0.9rem 0.9rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; margin-bottom: 1.2rem;
+}
 .label {
   font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted);
   text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; display: block;
@@ -125,11 +153,15 @@ select {
   <button class="sync-all-btn" id="sync-all-btn">Отправить все</button>
 </div>
 
-<div class="card" id="match-card">
-  <span class="label">Матч</span>
-  <select id="match-select"></select>
-  <div class="match-meta" id="match-meta"></div>
+<div class="match-header" id="match-header">
+  <div class="mh-info">
+    <div class="mh-label">Матч</div>
+    <div class="mh-title" id="mh-title">—</div>
+    <div class="mh-meta" id="mh-meta"></div>
+  </div>
+  <button class="edit-btn" id="edit-btn" title="Изменить матч" aria-label="Изменить матч" style="display:none;">✏️</button>
 </div>
+<select id="match-select" style="display:none;"></select>
 
 <button class="btn" id="mark-btn" disabled>Загрузка…</button>
 <div class="status" id="status"></div>
@@ -151,8 +183,10 @@ let clickCount = 0;
 
 const bannerEl = document.getElementById('conn-banner');
 const selectEl = document.getElementById('match-select');
-const matchCardEl = document.getElementById('match-card');
-const metaEl = document.getElementById('match-meta');
+const matchHeaderEl = document.getElementById('match-header');
+const mhTitleEl = document.getElementById('mh-title');
+const mhMetaEl = document.getElementById('mh-meta');
+const editBtn = document.getElementById('edit-btn');
 const btnEl = document.getElementById('mark-btn');
 const statusEl = document.getElementById('status');
 const logEl = document.getElementById('log');
@@ -323,25 +357,48 @@ function renderQueueUI() {
   renderSyncPanel();
 }
 
-// ---------- основная форма ----------
-function renderMeta() {
+// ---------- основная форма: матч как заголовок + иконка редактирования ----------
+function renderMatchHeader() {
   const m = matches[selectEl.selectedIndex];
-  if (!m) { metaEl.textContent = ''; return; }
-  metaEl.textContent = `${m.date}${m.venue ? ' · ' + m.venue : ''}`;
+  if (!m) {
+    mhTitleEl.textContent = matches.length === 0 && !isOnline ? 'Определим при синхронизации' : '—';
+    mhMetaEl.textContent = '';
+    return;
+  }
+  mhTitleEl.textContent = m.label;
+  mhMetaEl.textContent = `${m.date}${m.venue ? ' · ' + m.venue : ''}`;
 }
-selectEl.addEventListener('change', renderMeta);
+
+function closeMatchEditor() {
+  selectEl.style.display = 'none';
+}
+
+editBtn.addEventListener('click', () => {
+  const isOpen = selectEl.style.display !== 'none';
+  selectEl.style.display = isOpen ? 'none' : '';
+});
+
+selectEl.addEventListener('change', () => {
+  renderMatchHeader();
+  closeMatchEditor();
+});
 
 function applyModeToButton() {
   if (matches.length === 0 && !isOnline) {
-    matchCardEl.style.display = 'none';
+    matchHeaderEl.style.display = 'none';
+    selectEl.style.display = 'none';
+    editBtn.style.display = 'none';
     btnEl.classList.add('offline-mode');
     btnEl.textContent = '🎬 Зафиксировать хайлайт (офлайн)';
     btnEl.disabled = false;
   } else if (matches.length === 0) {
+    matchHeaderEl.style.display = 'none';
+    closeMatchEditor();
     btnEl.textContent = 'Сегодня матчей нет';
     btnEl.disabled = true;
   } else {
-    matchCardEl.style.display = '';
+    matchHeaderEl.style.display = '';
+    editBtn.style.display = '';
     btnEl.classList.remove('offline-mode');
     btnEl.textContent = '🎬 Зафиксировать хайлайт';
     btnEl.disabled = false;
@@ -361,7 +418,8 @@ async function loadMatches() {
       opt.textContent = m.label;
       selectEl.appendChild(opt);
     });
-    renderMeta();
+    closeMatchEditor();
+    renderMatchHeader();
   } catch (e) {
     setConnBanner(false);
   }

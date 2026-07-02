@@ -155,6 +155,20 @@ const syncCardEl = document.getElementById('sync-card');
 const syncListEl = document.getElementById('sync-list');
 const syncAllBtn = document.getElementById('sync-all-btn');
 
+// ---------- fetch с жёстким таймаутом ----------
+// В авиарежиме/без сети fetch на многих телефонах не падает с ошибкой сразу,
+// а зависает на системном таймауте (может быть 30+ секунд). Обрываем сами через 4с,
+// иначе баннер "проверяем связь" висит бесконечно и офлайн-режим не включается.
+async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ---------- офлайн-часы (всегда МСК/Волгоград, независимо от таймзоны устройства) ----------
 function formatMoscowNow() {
   const now = new Date();
@@ -240,7 +254,7 @@ async function syncOne(item, sel, row, sendBtn) {
   sendBtn.disabled = true;
   sendBtn.textContent = '…';
   try {
-    const res = await fetch(`${BACKEND}/highlights/mark`, {
+    const res = await fetchWithTimeout(`${BACKEND}/highlights/mark`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -299,7 +313,7 @@ function applyModeToButton() {
 
 async function loadMatches() {
   try {
-    const res = await fetch(`${BACKEND}/highlights/matches`);
+    const res = await fetchWithTimeout(`${BACKEND}/highlights/matches`);
     const data = await res.json();
     matches = data.matches || [];
     setConnBanner(true);
@@ -334,7 +348,7 @@ btnEl.addEventListener('click', async () => {
   btnEl.disabled = true;
   btnEl.textContent = 'Записываю…';
   try {
-    const res = await fetch(`${BACKEND}/highlights/mark`, {
+    const res = await fetchWithTimeout(`${BACKEND}/highlights/mark`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ match_date: m.date, pair_a: m.pair_a, pair_b: m.pair_b, venue: m.venue }),

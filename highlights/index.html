@@ -82,6 +82,13 @@ body {
 .modal-title {
   font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; margin-bottom: 0.4rem;
 }
+.assign-card {
+  border: 1.5px solid var(--orange); box-shadow: 0 0 0 4px var(--orange-dim); text-align: center;
+}
+.assign-icon { font-size: 2.4rem; margin-bottom: 0.4rem; }
+.assign-modal-title { font-size: 1.5rem; color: var(--orange); text-align: center; }
+.assign-card .modal-subtitle { text-align: center; margin-bottom: 1rem; }
+.assign-card .modal-list { text-align: left; }
 .modal-subtitle {
   font-size: 12px; color: var(--muted); margin-bottom: 0.8rem;
 }
@@ -193,8 +200,9 @@ body {
 </div>
 
 <div class="modal-overlay" id="assign-modal-overlay">
-  <div class="modal-card">
-    <div class="modal-title">⏳ Есть несинхронизированные хайлайты</div>
+  <div class="modal-card assign-card">
+    <div class="assign-icon">🎬</div>
+    <div class="modal-title assign-modal-title">Хайлайты без матча</div>
     <div class="modal-subtitle" id="assign-modal-subtitle">Выбери один матч для всех — потом отправим</div>
     <div class="modal-list" id="assign-modal-list"></div>
     <button class="modal-cancel-btn" id="assign-modal-later-btn">Позже</button>
@@ -231,6 +239,20 @@ const assignModalLaterBtn = document.getElementById('assign-modal-later-btn');
 const btnEl = document.getElementById('mark-btn');
 const statusEl = document.getElementById('status');
 const logEl = document.getElementById('log');
+
+// ---------- статус-строка с автоскрытием ----------
+let statusHideTimer = null;
+function showStatus(text, cls, autoHideMs = 2500) {
+  statusEl.textContent = text;
+  statusEl.className = 'status ' + cls;
+  if (statusHideTimer) clearTimeout(statusHideTimer);
+  if (autoHideMs) {
+    statusHideTimer = setTimeout(() => {
+      statusEl.textContent = '';
+      statusEl.className = 'status';
+    }, autoHideMs);
+  }
+}
 
 // ---------- fetch с жёстким таймаутом ----------
 // В авиарежиме/без сети fetch на многих телефонах не падает с ошибкой сразу,
@@ -306,25 +328,40 @@ function openAssignModal() {
 
   const subtitleEl = document.getElementById('assign-modal-subtitle');
   subtitleEl.textContent = unassigned.length === 1
-    ? 'Выбери матч для этого хайлайта'
-    : `Выбери один матч для всех (${unassigned.length})`;
+    ? 'Пока не знаем матч. Выбери его ниже — сразу отправим'
+    : `Сохранили ${unassigned.length} шт. без интернета. Выбери матч ниже — сразу отправим все`;
 
   assignModalListEl.innerHTML = '';
   matches.forEach((m) => {
     const btn = document.createElement('button');
     btn.className = 'modal-match-btn';
     btn.innerHTML = `${m.label}<span class="mm-meta">${m.date}${m.venue ? ' · ' + m.venue : ''}</span>`;
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const q = getQueue();
+      const touchedIds = [];
       unassigned.forEach((item) => {
         const idx = q.findIndex((x) => x.id === item.id);
         if (idx !== -1) {
           q[idx].assigned = { label: m.label, date: m.date, pair_a: m.pair_a, pair_b: m.pair_b, venue: m.venue };
+          touchedIds.push(item.id);
         }
       });
       setQueue(q);
       closeAssignModal();
       renderLog();
+      showStatus(`Отправляю ${touchedIds.length}…`, 'ok', null);
+
+      let ok = 0;
+      for (const id of touchedIds) {
+        const current = getQueue().find((x) => x.id === id);
+        if (current && current.assigned && (await trySendItem(current))) ok++;
+      }
+      renderLog();
+      if (ok === touchedIds.length) {
+        showStatus(`✅ Отправлено: ${ok} · ${m.label}`, 'ok', 3000);
+      } else {
+        showStatus(`⚠️ Отправлено ${ok} из ${touchedIds.length}, остальное — кнопкой ниже`, 'err', 4000);
+      }
     });
     assignModalListEl.appendChild(btn);
   });
@@ -543,8 +580,7 @@ btnEl.addEventListener('click', async () => {
   if (!isOnline) {
     addToQueue(tsAtClick);
     renderLog();
-    statusEl.textContent = `📴 Сохранено локально: ${tsAtClick.split(' ')[1]}. Матч выберешь при следующем заходе с интернетом`;
-    statusEl.className = 'status ok';
+    showStatus(`📴 Сохранено локально: ${tsAtClick.split(' ')[1]}`, 'ok', 2000);
     return;
   }
 
@@ -562,16 +598,14 @@ btnEl.addEventListener('click', async () => {
     if (!data.ok) throw new Error('bad response');
     sentCount++;
     sentLog.push({ num: sentCount, label: m.label, time: data.highlight_time });
-    statusEl.textContent = `✅ Записано: ${data.highlight_time}`;
-    statusEl.className = 'status ok';
+    showStatus(`✅ Записано: ${data.highlight_time}`, 'ok', 2000);
     renderLog();
   } catch (e) {
     // Сеть отвалилась прямо во время отправки — не теряем хайлайт, кладём в офлайн-очередь
     addToQueue(tsAtClick);
     renderLog();
     setConnBanner(false);
-    statusEl.textContent = `📴 Не отправилось, сохранил локально: ${tsAtClick.split(' ')[1]}`;
-    statusEl.className = 'status err';
+    showStatus(`📴 Не отправилось, сохранил локально: ${tsAtClick.split(' ')[1]}`, 'err', 3000);
   } finally {
     applyModeToButton();
   }

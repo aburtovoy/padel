@@ -1,4 +1,4 @@
-const CACHE_NAME = 'padel-highlights-v8';
+const CACHE_NAME = 'padel-highlights-v9';
 const ASSETS = ['./', './index.html'];
 
 self.addEventListener('install', (e) => {

@@ -204,9 +204,13 @@ function removeFromQueue(id) {
 }
 
 // ---------- видимый список локально сохранённых (ещё не отправленных) хайлайтов ----------
+// Показывается ТОЛЬКО когда нет связи или ещё не подгружен список матчей — то есть когда
+// синк ещё физически невозможен. Как только можно синкать — этот блок прячется,
+// и те же записи показываются в блоке синхронизации ниже (без дублей).
 function renderPendingLog() {
   const q = getQueue();
-  if (q.length === 0) {
+  const canSync = isOnline && matches.length > 0;
+  if (q.length === 0 || canSync) {
     pendingLogEl.style.display = 'none';
     pendingLogItemsEl.innerHTML = '';
     return;
@@ -229,7 +233,7 @@ function setConnBanner(online) {
   bannerEl.textContent = online ? '🟢 На связи' : '🟠 Нет интернета — хайлайты сохраняются локально';
 }
 
-// ---------- рендер очереди на синхронизацию ----------
+// ---------- рендер очереди на синхронизацию (когда можно синкать — единственное место, где видны несинканные хайлайты) ----------
 function renderSyncPanel() {
   const q = getQueue();
   if (!isOnline || q.length === 0 || matches.length === 0) {
@@ -264,7 +268,7 @@ function renderSyncPanel() {
     discardBtn.className = 'discard-btn';
     discardBtn.textContent = '✕';
     discardBtn.title = 'Не отправлять этот хайлайт';
-    discardBtn.addEventListener('click', () => { removeFromQueue(item.id); renderSyncPanel(); });
+    discardBtn.addEventListener('click', () => { removeFromQueue(item.id); renderQueueUI(); });
 
     row.appendChild(ts);
     row.appendChild(sel);
@@ -291,7 +295,7 @@ async function syncOne(item, sel, row, sendBtn) {
     const data = await res.json();
     if (!data.ok) throw new Error('bad response');
     removeFromQueue(item.id);
-    renderPendingLog();
+    renderQueueUI();
     row.classList.add('done');
     sendBtn.textContent = '✓';
   } catch (e) {
@@ -310,8 +314,14 @@ syncAllBtn.addEventListener('click', async () => {
     const sendBtn = row.querySelector('.send-btn');
     await syncOne(item, sel, row, sendBtn);
   }
-  setTimeout(renderSyncPanel, 400);
+  setTimeout(renderQueueUI, 400);
 });
+
+// ---------- единая точка обновления UI очереди — показывает ровно один из двух блоков ----------
+function renderQueueUI() {
+  renderPendingLog();
+  renderSyncPanel();
+}
 
 // ---------- основная форма ----------
 function renderMeta() {
@@ -356,8 +366,7 @@ async function loadMatches() {
     setConnBanner(false);
   }
   applyModeToButton();
-  renderSyncPanel();
-  renderPendingLog();
+  renderQueueUI();
 }
 
 btnEl.addEventListener('click', async () => {
@@ -366,7 +375,7 @@ btnEl.addEventListener('click', async () => {
   // офлайн-режим (страница уже знает, что связи нет, или матчей нет в кэше) — просто копим локально
   if (!isOnline) {
     addToQueue(tsAtClick);
-    renderPendingLog();
+    renderQueueUI();
     statusEl.textContent = `📴 Сохранено локально: ${tsAtClick.split(' ')[1]}. Матч выберешь при следующем заходе с интернетом`;
     statusEl.className = 'status ok';
     return;
@@ -394,7 +403,7 @@ btnEl.addEventListener('click', async () => {
   } catch (e) {
     // Сеть отвалилась прямо во время отправки — не теряем хайлайт, кладём в офлайн-очередь
     addToQueue(tsAtClick);
-    renderPendingLog();
+    renderQueueUI();
     setConnBanner(false);
     statusEl.textContent = `📴 Не отправилось, сохранил локально: ${tsAtClick.split(' ')[1]}`;
     statusEl.className = 'status err';
@@ -404,7 +413,7 @@ btnEl.addEventListener('click', async () => {
 });
 
 window.addEventListener('online', () => loadMatches());
-window.addEventListener('offline', () => { setConnBanner(false); applyModeToButton(); renderSyncPanel(); renderPendingLog(); });
+window.addEventListener('offline', () => { setConnBanner(false); applyModeToButton(); renderQueueUI(); });
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

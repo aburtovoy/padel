@@ -106,18 +106,6 @@ body {
   border-radius: 12px; padding: 0.85rem; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
   cursor: pointer; margin-bottom: 0.5rem;
 }
-.assign-row {
-  background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
-  padding: 0.7rem; margin-bottom: 0.6rem;
-}
-.assign-row-ts {
-  font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--orange);
-  margin-bottom: 0.4rem;
-}
-.assign-row select {
-  width: 100%; background: var(--surface); color: var(--text); border: 1px solid var(--border);
-  border-radius: 8px; padding: 0.6rem 0.6rem; font-size: 13px;
-}
 
 .btn {
   width: 100%; max-width: 420px; background: var(--accent); color: #0e0e0f; border: none;
@@ -207,9 +195,8 @@ body {
 <div class="modal-overlay" id="assign-modal-overlay">
   <div class="modal-card">
     <div class="modal-title">⏳ Есть несинхронизированные хайлайты</div>
-    <div class="modal-subtitle">Выбери матч для каждого — потом отправим</div>
+    <div class="modal-subtitle" id="assign-modal-subtitle">Выбери один матч для всех — потом отправим</div>
     <div class="modal-list" id="assign-modal-list"></div>
-    <button class="modal-done-btn" id="assign-modal-done-btn">Готово</button>
     <button class="modal-cancel-btn" id="assign-modal-later-btn">Позже</button>
   </div>
 </div>
@@ -240,7 +227,6 @@ const modalListEl = document.getElementById('modal-match-list');
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const assignModalOverlayEl = document.getElementById('assign-modal-overlay');
 const assignModalListEl = document.getElementById('assign-modal-list');
-const assignModalDoneBtn = document.getElementById('assign-modal-done-btn');
 const assignModalLaterBtn = document.getElementById('assign-modal-later-btn');
 const btnEl = document.getElementById('mark-btn');
 const statusEl = document.getElementById('status');
@@ -313,32 +299,36 @@ function setConnBanner(online) {
 }
 
 // ================= попап назначения матча для несинхронизированных хайлайтов =================
+// Один выбор — сразу для всех несинканных хайлайтов (обычно они все с одного матча подряд).
 function openAssignModal() {
   const unassigned = getQueue().filter((x) => !x.assigned);
   if (unassigned.length === 0 || matches.length === 0) return;
+
+  const subtitleEl = document.getElementById('assign-modal-subtitle');
+  subtitleEl.textContent = unassigned.length === 1
+    ? 'Выбери матч для этого хайлайта'
+    : `Выбери один матч для всех (${unassigned.length})`;
+
   assignModalListEl.innerHTML = '';
-  unassigned.forEach((item) => {
-    const row = document.createElement('div');
-    row.className = 'assign-row';
-
-    const ts = document.createElement('div');
-    ts.className = 'assign-row-ts';
-    ts.textContent = '⏳ ' + item.ts;
-
-    const sel = document.createElement('select');
-    matches.forEach((m, i) => {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = m.label;
-      sel.appendChild(opt);
+  matches.forEach((m) => {
+    const btn = document.createElement('button');
+    btn.className = 'modal-match-btn';
+    btn.innerHTML = `${m.label}<span class="mm-meta">${m.date}${m.venue ? ' · ' + m.venue : ''}</span>`;
+    btn.addEventListener('click', () => {
+      const q = getQueue();
+      unassigned.forEach((item) => {
+        const idx = q.findIndex((x) => x.id === item.id);
+        if (idx !== -1) {
+          q[idx].assigned = { label: m.label, date: m.date, pair_a: m.pair_a, pair_b: m.pair_b, venue: m.venue };
+        }
+      });
+      setQueue(q);
+      closeAssignModal();
+      renderLog();
     });
-    sel.selectedIndex = findClosestMatchIndex(item.ts);
-    sel.dataset.itemId = item.id;
-
-    row.appendChild(ts);
-    row.appendChild(sel);
-    assignModalListEl.appendChild(row);
+    assignModalListEl.appendChild(btn);
   });
+
   assignModalOverlayEl.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -348,20 +338,6 @@ function closeAssignModal() {
   document.body.style.overflow = '';
 }
 
-assignModalDoneBtn.addEventListener('click', () => {
-  const q = getQueue();
-  assignModalListEl.querySelectorAll('select').forEach((sel) => {
-    const id = sel.dataset.itemId;
-    const m = matches[sel.selectedIndex];
-    const idx = q.findIndex((x) => x.id === id);
-    if (idx !== -1 && m) {
-      q[idx].assigned = { label: m.label, date: m.date, pair_a: m.pair_a, pair_b: m.pair_b, venue: m.venue };
-    }
-  });
-  setQueue(q);
-  closeAssignModal();
-  renderLog();
-});
 assignModalLaterBtn.addEventListener('click', closeAssignModal);
 assignModalOverlayEl.addEventListener('click', (e) => { if (e.target === assignModalOverlayEl) closeAssignModal(); });
 

@@ -134,6 +134,11 @@ select {
 <button class="btn" id="mark-btn" disabled>Загрузка…</button>
 <div class="status" id="status"></div>
 
+<div class="log" id="pending-log" style="display:none;">
+  <span class="label" style="margin-bottom:0.6rem;">Сохранено локально, ждёт синхронизации</span>
+  <div id="pending-log-items"></div>
+</div>
+
 <div class="log" id="log"></div>
 
 <script>
@@ -151,6 +156,8 @@ const metaEl = document.getElementById('match-meta');
 const btnEl = document.getElementById('mark-btn');
 const statusEl = document.getElementById('status');
 const logEl = document.getElementById('log');
+const pendingLogEl = document.getElementById('pending-log');
+const pendingLogItemsEl = document.getElementById('pending-log-items');
 const syncCardEl = document.getElementById('sync-card');
 const syncListEl = document.getElementById('sync-list');
 const syncAllBtn = document.getElementById('sync-all-btn');
@@ -194,6 +201,25 @@ function addToQueue(ts) {
 }
 function removeFromQueue(id) {
   setQueue(getQueue().filter((x) => x.id !== id));
+}
+
+// ---------- видимый список локально сохранённых (ещё не отправленных) хайлайтов ----------
+function renderPendingLog() {
+  const q = getQueue();
+  if (q.length === 0) {
+    pendingLogEl.style.display = 'none';
+    pendingLogItemsEl.innerHTML = '';
+    return;
+  }
+  pendingLogEl.style.display = '';
+  pendingLogItemsEl.innerHTML = '';
+  // новые сверху
+  q.slice().reverse().forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'log-item';
+    div.innerHTML = `<span>⏳ #${q.length - i} · матч выберешь при синке</span><span>${item.ts.split(' ')[1] || item.ts}</span>`;
+    pendingLogItemsEl.appendChild(div);
+  });
 }
 
 // ---------- баннер связи ----------
@@ -265,6 +291,7 @@ async function syncOne(item, sel, row, sendBtn) {
     const data = await res.json();
     if (!data.ok) throw new Error('bad response');
     removeFromQueue(item.id);
+    renderPendingLog();
     row.classList.add('done');
     sendBtn.textContent = '✓';
   } catch (e) {
@@ -330,6 +357,7 @@ async function loadMatches() {
   }
   applyModeToButton();
   renderSyncPanel();
+  renderPendingLog();
 }
 
 btnEl.addEventListener('click', async () => {
@@ -338,6 +366,7 @@ btnEl.addEventListener('click', async () => {
   // офлайн-режим (страница уже знает, что связи нет, или матчей нет в кэше) — просто копим локально
   if (!isOnline) {
     addToQueue(tsAtClick);
+    renderPendingLog();
     statusEl.textContent = `📴 Сохранено локально: ${tsAtClick.split(' ')[1]}. Матч выберешь при следующем заходе с интернетом`;
     statusEl.className = 'status ok';
     return;
@@ -365,6 +394,7 @@ btnEl.addEventListener('click', async () => {
   } catch (e) {
     // Сеть отвалилась прямо во время отправки — не теряем хайлайт, кладём в офлайн-очередь
     addToQueue(tsAtClick);
+    renderPendingLog();
     setConnBanner(false);
     statusEl.textContent = `📴 Не отправилось, сохранил локально: ${tsAtClick.split(' ')[1]}`;
     statusEl.className = 'status err';
@@ -374,7 +404,7 @@ btnEl.addEventListener('click', async () => {
 });
 
 window.addEventListener('online', () => loadMatches());
-window.addEventListener('offline', () => { setConnBanner(false); applyModeToButton(); renderSyncPanel(); });
+window.addEventListener('offline', () => { setConnBanner(false); applyModeToButton(); renderSyncPanel(); renderPendingLog(); });
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

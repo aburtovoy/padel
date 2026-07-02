@@ -99,10 +99,39 @@ body {
   display: flex; align-items: center; justify-content: center;
 }
 .edit-btn:active { transform: scale(0.94); }
-#match-select {
-  width: 100%; max-width: 420px; background: var(--surface); color: var(--text);
-  border: 1px solid var(--accent); border-radius: 12px; padding: 0.9rem 0.9rem;
-  font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; margin-bottom: 1.2rem;
+.mh-hint {
+  font-size: 11px; color: var(--muted); text-align: center; max-width: 420px;
+  margin: -0.6rem 0 1rem; font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem;
+}
+.modal-overlay.open { display: flex; }
+.modal-card {
+  width: 100%; max-width: 420px; max-height: 78vh; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 18px; padding: 1.2rem;
+  display: flex; flex-direction: column;
+}
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; margin-bottom: 0.8rem;
+}
+.modal-list { overflow-y: auto; margin: -0.2rem 0 0.8rem; }
+.modal-match-btn {
+  width: 100%; text-align: left; background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); border-radius: 12px; padding: 0.8rem 0.9rem; margin-bottom: 0.5rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; cursor: pointer;
+}
+.modal-match-btn .mm-meta {
+  display: block; font-size: 11px; color: var(--muted); margin-top: 0.2rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.modal-match-btn.active { border-color: var(--accent); background: var(--accent-dim); }
+.modal-cancel-btn {
+  width: 100%; background: transparent; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 12px; padding: 0.8rem; font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer;
 }
 .label {
   font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted);
@@ -161,7 +190,16 @@ select {
   </div>
   <button class="edit-btn" id="edit-btn" title="Изменить матч" aria-label="Изменить матч" style="display:none;">✏️</button>
 </div>
+<div class="mh-hint" id="mh-hint" style="display:none;">Матч определился неверно? Можно поменять ✏️</div>
 <select id="match-select" style="display:none;"></select>
+
+<div class="modal-overlay" id="match-modal-overlay">
+  <div class="modal-card">
+    <div class="modal-title">Выбери матч</div>
+    <div class="modal-list" id="modal-match-list"></div>
+    <button class="modal-cancel-btn" id="modal-cancel-btn">Отмена</button>
+  </div>
+</div>
 
 <button class="btn" id="mark-btn" disabled>Загрузка…</button>
 <div class="status" id="status"></div>
@@ -187,6 +225,10 @@ const matchHeaderEl = document.getElementById('match-header');
 const mhTitleEl = document.getElementById('mh-title');
 const mhMetaEl = document.getElementById('mh-meta');
 const editBtn = document.getElementById('edit-btn');
+const mhHintEl = document.getElementById('mh-hint');
+const modalOverlayEl = document.getElementById('match-modal-overlay');
+const modalListEl = document.getElementById('modal-match-list');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const btnEl = document.getElementById('mark-btn');
 const statusEl = document.getElementById('status');
 const logEl = document.getElementById('log');
@@ -357,7 +399,7 @@ function renderQueueUI() {
   renderSyncPanel();
 }
 
-// ---------- основная форма: матч как заголовок + иконка редактирования ----------
+// ---------- основная форма: матч как заголовок + модалка редактирования ----------
 function renderMatchHeader() {
   const m = matches[selectEl.selectedIndex];
   if (!m) {
@@ -369,35 +411,50 @@ function renderMatchHeader() {
   mhMetaEl.textContent = `${m.date}${m.venue ? ' · ' + m.venue : ''}`;
 }
 
-function closeMatchEditor() {
-  selectEl.style.display = 'none';
+function openMatchModal() {
+  modalListEl.innerHTML = '';
+  matches.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'modal-match-btn' + (i === selectEl.selectedIndex ? ' active' : '');
+    btn.innerHTML = `${m.label}<span class="mm-meta">${m.date}${m.venue ? ' · ' + m.venue : ''}</span>`;
+    btn.addEventListener('click', () => {
+      selectEl.selectedIndex = i;
+      renderMatchHeader();
+      closeMatchModal();
+    });
+    modalListEl.appendChild(btn);
+  });
+  modalOverlayEl.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-editBtn.addEventListener('click', () => {
-  const isOpen = selectEl.style.display !== 'none';
-  selectEl.style.display = isOpen ? 'none' : '';
-});
+function closeMatchModal() {
+  modalOverlayEl.classList.remove('open');
+  document.body.style.overflow = '';
+}
 
-selectEl.addEventListener('change', () => {
-  renderMatchHeader();
-  closeMatchEditor();
-});
+editBtn.addEventListener('click', openMatchModal);
+modalCancelBtn.addEventListener('click', closeMatchModal);
+modalOverlayEl.addEventListener('click', (e) => { if (e.target === modalOverlayEl) closeMatchModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMatchModal(); });
 
 function applyModeToButton() {
   if (matches.length === 0 && !isOnline) {
     matchHeaderEl.style.display = 'none';
-    selectEl.style.display = 'none';
+    mhHintEl.style.display = 'none';
     editBtn.style.display = 'none';
     btnEl.classList.add('offline-mode');
     btnEl.textContent = '🎬 Зафиксировать хайлайт (офлайн)';
     btnEl.disabled = false;
   } else if (matches.length === 0) {
     matchHeaderEl.style.display = 'none';
-    closeMatchEditor();
+    mhHintEl.style.display = 'none';
+    closeMatchModal();
     btnEl.textContent = 'Сегодня матчей нет';
     btnEl.disabled = true;
   } else {
     matchHeaderEl.style.display = '';
+    mhHintEl.style.display = '';
     editBtn.style.display = '';
     btnEl.classList.remove('offline-mode');
     btnEl.textContent = '🎬 Зафиксировать хайлайт';
@@ -418,7 +475,6 @@ async function loadMatches() {
       opt.textContent = m.label;
       selectEl.appendChild(opt);
     });
-    closeMatchEditor();
     renderMatchHeader();
   } catch (e) {
     setConnBanner(false);

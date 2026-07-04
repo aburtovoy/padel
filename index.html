@@ -418,7 +418,8 @@ td:first-child { text-align: center; padding-left: 12px; }
   letter-spacing: 0.1em; color: var(--muted); margin: 1.2rem 0 0.5rem;
 }
 .rules-section h2.rules-group-title {
-  font-size: 1.9rem; border-bottom: 2px solid var(--accent); margin-bottom: 1.5rem;
+  font-size: 1.9rem; line-height: 1.25; border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.7rem; margin-bottom: 1.5rem;
 }
 .rules-subsection { margin-bottom: 1.8rem; }
 .rules-subsection:last-child { margin-bottom: 0; }
@@ -702,62 +703,50 @@ td:first-child { text-align: center; padding-left: 12px; }
   <div class="rules-wrap">
 
     <div class="rules-section">
-      <h2>О лиге</h2>
-      <p>Падел-лига для тех, кто хочет играть регулярно, прогрессировать и быть частью живого сообщества. Лига не привязана ни к одному клубу — играем там, где удобно участникам.</p>
-      <h3>Клубы</h3>
-      <ul>
-        <li>Arena</li>
-        <li>Selectory</li>
-        <li>Locos</li>
-      </ul>
-    </div>
+      <h2 class="rules-group-title">О лиге</h2>
 
-    <div class="rules-section">
-      <h2>Сезоны</h2>
-      <ul>
-        <li>Сезон длится <strong>3 месяца</strong></li>
-        <li>Лига играется <strong>парами с постоянным партнёром</strong></li>
-        <li>Состав пары фиксируется на весь сезон, замена партнёра <strong>запрещена</strong></li>
-        <li>Все пары находятся в <strong>единой рейтинговой таблице</strong></li>
-      </ul>
-    </div>
+      <div class="rules-subsection">
+        <h2>Формат</h2>
+        <p>Падел-лига для тех, кто хочет играть регулярно, прогрессировать и быть частью живого сообщества. Лига не привязана ни к одному клубу — играем там, где удобно участникам.</p>
+      </div>
 
-    <div class="rules-section">
-      <h2>Регистрация команды</h2>
-      <p>Новые пары могут присоединиться в любой момент сезона при наличии свободных мест. При регистрации указывается:</p>
-      <ul>
-        <li><span class="rules-tag">1</span> Режим активности: <strong>Стандарт</strong> (~1 матч в неделю) или <strong>Активный</strong> (до 2 матчей в неделю)</li>
-        <li><span class="rules-tag">2</span> Капитан команды</li>
-        <li><span class="rules-tag">3</span> Удобные временные слоты</li>
-        <li><span class="rules-tag">4</span> Список клубов и их приоритет</li>
-      </ul>
-    </div>
+      <div class="rules-subsection">
+        <h2>Клубы</h2>
+        <ul>
+          <li>Arena</li>
+          <li>Selectory</li>
+          <li>Locos</li>
+        </ul>
+      </div>
 
-    <div class="rules-section">
-      <h2>Рейтинг</h2>
-      <p>Результат каждого матча влияет на рейтинг. Учитывается не только факт победы, но и счёт.</p>
-      <h3>Назначение матчей</h3>
-      <ul>
-        <li><strong>Рейтинг</strong> — соперник в диапазоне ±5 позиций (для топ-3 и нижних-3 диапазон расширяется)</li>
-        <li><strong>История встреч</strong> — не чаще 1 раза за 6 недель</li>
-        <li><strong>Доступность</strong> — учитываются ваши временные предпочтения</li>
-      </ul>
-      <div class="rules-highlight">Чем шире ваш диапазон доступности — тем проще подобрать соперника.</div>
-    </div>
-
-    <div class="rules-section">
-      <h2>Отказ от матча</h2>
-      <div class="rules-penalty">
-        <strong>Отказ = техническое поражение 0:2</strong><br>
-        Отказавшаяся пара: −15 рейтинга · Соперник: +10 рейтинга<br>
-        Максимум 2 отказа за сезон
+      <div class="rules-subsection">
+        <h2>Сезоны</h2>
+        <ul>
+          <li>Сезон длится <strong>3 месяца</strong></li>
+          <li>Лига играется <strong>парами с постоянным партнёром</strong></li>
+          <li>Состав пары фиксируется на весь сезон, замена партнёра <strong>запрещена</strong></li>
+          <li>Все пары находятся в <strong>единой рейтинговой таблице</strong></li>
+        </ul>
       </div>
     </div>
 
     <div class="rules-section">
-      <h2>Корт</h2>
-      <p>Лига не участвует в бронировании корта. Ответственность за оплату, перенос и отмену лежит на участниках.</p>
-      <p>Если одна из пар не приходит без предупреждения — она компенсирует стоимость корта стороне, оформившей бронь.</p>
+      <h2 class="rules-group-title">Рейтинг</h2>
+
+      <div class="rules-subsection">
+        <h2>Начисление</h2>
+        <p>Результат каждого матча влияет на рейтинг. Учитывается не только факт победы, но и счёт.</p>
+      </div>
+
+      <div class="rules-subsection">
+        <h2>Назначение матчей</h2>
+        <ul>
+          <li><strong>Рейтинг</strong> — соперник в диапазоне ±5 позиций (для топ-3 и нижних-3 диапазон расширяется)</li>
+          <li><strong>История встреч</strong> — не чаще 1 раза за 6 недель</li>
+          <li><strong>Доступность</strong> — учитываются ваши временные предпочтения</li>
+        </ul>
+        <div class="rules-highlight">Чем шире ваш диапазон доступности — тем проще подобрать соперника.</div>
+      </div>
     </div>
 
     <div class="rules-section">
@@ -828,12 +817,22 @@ td:first-child { text-align: center; padding-left: 12px; }
     </div>
 
     <div class="rules-section">
-      <h2>Пауза</h2>
-      <p>Участники могут брать паузу от матчей без потери рейтинга — не более <strong>3 недель за сезон</strong>.</p>
+      <h2 class="rules-group-title">Корт и пауза</h2>
+
+      <div class="rules-subsection">
+        <h2>Корт</h2>
+        <p>Лига не участвует в бронировании корта. Ответственность за оплату, перенос и отмену лежит на участниках.</p>
+        <p>Если одна из пар не приходит без предупреждения — она компенсирует стоимость корта стороне, оформившей бронь.</p>
+      </div>
+
+      <div class="rules-subsection">
+        <h2>Пауза</h2>
+        <p>Участники могут брать паузу от матчей без потери рейтинга — не более <strong>3 недель за сезон</strong>.</p>
+      </div>
     </div>
 
     <div class="rules-section">
-      <h2>Финал сезона</h2>
+      <h2 class="rules-group-title">Финал сезона</h2>
       <ul>
         <li>Участвуют <strong>топ-8 пар</strong> по рейтингу за неделю до финала</li>
         <li>Условие участия: минимум <strong>8 сыгранных матчей</strong> за сезон</li>

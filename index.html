@@ -545,12 +545,15 @@ tr.division-header.first .division-header-inner { padding-top: .4rem; }
   .hide-sm { display: none; }
   table { min-width: 0; width: 100%; table-layout: fixed; }
   th, td { padding-left: 4px; padding-right: 4px; font-size: 12px; }
-  th:nth-child(2), td:nth-child(2) { width: 38%; }
-  th:nth-child(1), td:nth-child(1) { width: 28px; text-align: center; }
-  th:nth-child(3), td:nth-child(3) { width: 15%; }
+  th:nth-child(1), td:nth-child(1) { text-align: center; }
   th:nth-child(4), td:nth-child(4),
   th:nth-child(5), td:nth-child(5),
-  th:nth-child(6), td:nth-child(6) { width: 10%; text-align: center; }
+  th:nth-child(6), td:nth-child(6) { text-align: center; }
+  .col-place    { width: 11%; }
+  .col-pair     { width: 40%; }
+  .col-elo      { width: 16%; }
+  .col-wins, .col-losses, .col-matches { width: 11%; }
+  .col-winrate  { width: 0; }
   .pair-name { font-size: 12px; }
   .elo-val { font-size: 1rem; }
   .elo-delta { font-size: 9px; }
@@ -751,6 +754,10 @@ tr.division-header.first .division-header-inner { padding-top: .4rem; }
     </div>
     <div id="rating-state" class="state"><div class="spinner"></div>Загружаем рейтинг...</div>
     <table id="rating-table" style="display:none">
+      <colgroup>
+        <col class="col-place"><col class="col-pair"><col class="col-elo">
+        <col class="col-wins"><col class="col-losses"><col class="col-matches"><col class="col-winrate">
+      </colgroup>
       <thead><tr>
         <th>#</th><th>Пара</th>
         <th class="r">ELO</th>

@@ -87,13 +87,13 @@ th.sortable.desc::after { content: ' ↓'; color: var(--accent); }
 
 tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; cursor: default; }
 tbody tr:hover { background: rgba(255,255,255,0.025); }
-tbody tr.top1 { background: rgba(245,200,66,0.06); }
-tbody tr.top2 { background: rgba(176,184,196,0.05); }
-tbody tr.top3 { background: rgba(212,132,90,0.05); }
-tbody tr.zone-green { background: rgba(80,200,120,0.05); }
-tbody tr.zone-red   { background: rgba(220,80,80,0.05); }
-tbody tr.zone-green:hover { background: rgba(80,200,120,0.09); }
-tbody tr.zone-red:hover   { background: rgba(220,80,80,0.09); }
+/* Тонировка строк по зонам плей-офф (соответствует цветам линий-разделителей) */
+tbody tr.zone-a { background: rgba(125,216,125,0.06); }  /* 1-4: выбор соперника (зелёный) */
+tbody tr.zone-a:hover { background: rgba(125,216,125,0.1); }
+tbody tr.zone-b { background: rgba(200,240,96,0.06); }   /* 5-6: гарантированный плей-офф (accent) */
+tbody tr.zone-b:hover { background: rgba(200,240,96,0.1); }
+tbody tr.zone-c { background: rgba(245,200,66,0.05); }   /* 7-10: плей-ин (золотой) */
+tbody tr.zone-c:hover { background: rgba(245,200,66,0.09); }
 td { padding: 13px 12px 13px 0; font-size: 14px; vertical-align: middle; }
 
 /* ZONE DIVIDER */
@@ -1227,8 +1227,8 @@ function renderRating() {
 
   const total = ratingData.length;
   const ZONES = [
-    { after: 4,  color: 'var(--accent)', label: 'Выбор соперника',        tip: '1–4 место: команды сами выбирают соперника на плей-офф' },
-    { after: 6,  color: 'var(--green)',  label: 'Гарантированный плей-офф', tip: '5–6 место: прямая путёвка в плей-офф без плей-ина' },
+    { after: 4,  color: 'var(--green)',  label: 'Выбор соперника',        tip: '1–4 место: команды сами выбирают соперника на плей-офф' },
+    { after: 6,  color: 'var(--accent)', label: 'Гарантированный плей-офф', tip: '5–6 место: прямая путёвка в плей-офф без плей-ина' },
     { after: 10, color: 'var(--gold)',   label: 'Плей-ин',                 tip: '7–10 место: борьба за оставшиеся места в плей-офф' },
   ];
 
@@ -1266,12 +1266,9 @@ function renderRating() {
     else if (place===3) ph=`<span class="place-num p3">3</span>`;
     else ph=`<span class="place-num pn">${place}</span>`;
 
-    const origPlace = row.place;
-    const rc = origPlace===1?'top1':origPlace===2?'top2':origPlace===3?'top3':'';
-    const zoneGreen = !sortCol && place <= 8;
+    const zoneClass = !sortCol ? (place<=4 ? 'zone-a' : place<=6 ? 'zone-b' : place<=10 ? 'zone-c' : '') : '';
     const tr = document.createElement('tr');
-    const classes = [rc && !sortCol ? rc : '', zoneGreen ? 'zone-green' : ''].filter(Boolean).join(' ');
-    if (classes) tr.className = classes;
+    if (zoneClass) tr.className = zoneClass;
     tr.innerHTML = `
       <td>${ph}</td>
       <td><span class="pair-name">${row.pair}</span></td>

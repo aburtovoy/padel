@@ -158,6 +158,20 @@ td:first-child { text-align: center; padding-left: 12px; }
 .div-btn.div-gold.active  { color: var(--gold); }
 .div-btn.div-silver.active { color: var(--silver); }
 
+/* DIVISION SECTION HEADERS */
+tr.division-header { border-bottom: none; cursor: default; }
+tr.division-header:hover { background: none; }
+tr.division-header td { padding: 0; }
+.division-header-inner {
+  padding: 2.2rem 12px .6rem;
+  border-bottom: 1px solid var(--border);
+}
+tr.division-header.first .division-header-inner { padding-top: .4rem; }
+.division-header-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;
+  letter-spacing: .02em; color: var(--text);
+}
+
 .place-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; }
 .p1 { color: var(--gold); } .p2 { color: var(--silver); } .p3 { color: var(--bronze); }
 .pn { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
@@ -1262,8 +1276,22 @@ function renderRating() {
     { after: 4,  color: 'var(--green)',  label: 'Выбор соперника',        tip: '1–4 место: команды сами выбирают соперника на плей-офф' },
     { after: 6,  color: 'var(--accent)', label: 'Гарантированный плей-офф', tip: '5–6 место: прямая путёвка в плей-офф без плей-ина' },
     { after: 10, color: 'var(--gold)',   label: 'Плей-ин',                 tip: '7–10 место: борьба за оставшиеся места в плей-офф' },
-    { after: GOLD_SIZE, color: 'var(--silver)', label: 'Silver дивизион', tip: `С ${GOLD_SIZE + 1}-го места начинается Silver дивизион` },
   ];
+
+  function divisionHeaderRow(kind, first) {
+    const tr = document.createElement('tr');
+    tr.className = 'division-header' + (first ? ' first' : '');
+    const td = document.createElement('td');
+    td.colSpan = 7;
+    const color = kind === 'gold' ? 'var(--gold)' : 'var(--silver)';
+    const word  = kind === 'gold' ? 'Gold' : 'Silver';
+    td.innerHTML = `
+      <div class="division-header-inner">
+        <span class="division-header-title"><span style="color:${color}">${word}</span> дивизион</span>
+      </div>`;
+    tr.appendChild(td);
+    return tr;
+  }
 
   function zoneDividerRow(zone) {
     const tr = document.createElement('tr');
@@ -1287,6 +1315,13 @@ function renderRating() {
 
   sorted.forEach((row, idx) => {
     const place = sortCol ? (idx + 1) : row.place;
+
+    if (!sortCol && place === 1) {
+      tbody.appendChild(divisionHeaderRow('gold', true));
+    } else if (!sortCol && place === GOLD_SIZE + 1) {
+      tbody.appendChild(divisionHeaderRow('silver', false));
+    }
+
     const wr = row.matches > 0 ? Math.round(row.wins / row.matches * 100) : 0;
     const delta = row.lastDelta;
     const deltaHtml = delta !== 0

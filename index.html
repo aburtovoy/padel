@@ -95,6 +95,51 @@ tbody tr.zone-red   { background: rgba(220,80,80,0.05); }
 tbody tr.zone-green:hover { background: rgba(80,200,120,0.09); }
 tbody tr.zone-red:hover   { background: rgba(220,80,80,0.09); }
 td { padding: 13px 12px 13px 0; font-size: 14px; vertical-align: middle; }
+
+/* ZONE DIVIDER */
+tr.zone-divider { border-bottom: none; cursor: default; }
+tr.zone-divider:hover { background: none; }
+tr.zone-divider td { padding: 0; }
+.zone-divider-inner {
+  display: flex; align-items: center; gap: .7rem;
+  padding: 1.15rem 12px .95rem;
+}
+.zone-divider-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--zone-color, var(--border)) 15%, var(--zone-color, var(--border)) 85%, transparent);
+  opacity: .55;
+}
+.zone-divider-label {
+  display: flex; align-items: center; gap: .4rem;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--zone-color, var(--muted)); white-space: nowrap;
+}
+.zone-divider-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--zone-color, var(--muted)); flex-shrink: 0;
+}
+.zone-divider-q {
+  position: relative;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1px solid currentColor; color: var(--zone-color, var(--muted));
+  font-size: 9px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  cursor: help; flex-shrink: 0; opacity: .8;
+}
+.zone-divider-q:hover { opacity: 1; }
+.zone-divider-q .zone-tip {
+  visibility: hidden; opacity: 0; pointer-events: none;
+  position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); font-family: 'IBM Plex Sans', sans-serif;
+  text-transform: none; letter-spacing: normal; font-size: 12px;
+  padding: .6rem .8rem; border-radius: 6px; width: 220px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  transition: opacity .15s, visibility .15s; z-index: 5; white-space: normal;
+}
+.zone-divider-q:hover .zone-tip,
+.zone-divider-q:focus .zone-tip,
+.zone-divider-q.tip-open .zone-tip { visibility: visible; opacity: 1; }
 td:first-child { text-align: center; padding-left: 12px; }
 
 .place-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; }
@@ -1180,6 +1225,33 @@ function renderRating() {
   const tbody = document.getElementById('rating-tbody');
   tbody.innerHTML = '';
 
+  const total = ratingData.length;
+  const ZONES = [
+    { after: 4,  color: 'var(--accent)', label: 'Выбор соперника',        tip: '1–4 место: команды сами выбирают соперника на плей-офф' },
+    { after: 6,  color: 'var(--green)',  label: 'Гарантированный плей-офф', tip: '5–6 место: прямая путёвка в плей-офф без плей-ина' },
+    { after: 10, color: 'var(--gold)',   label: 'Плей-ин',                 tip: '7–10 место: борьба за оставшиеся места в плей-офф' },
+  ];
+
+  function zoneDividerRow(zone) {
+    const tr = document.createElement('tr');
+    tr.className = 'zone-divider';
+    const td = document.createElement('td');
+    td.colSpan = 7;
+    td.innerHTML = `
+      <div class="zone-divider-inner" style="--zone-color:${zone.color}">
+        <span class="zone-divider-line"></span>
+        <span class="zone-divider-label">
+          <span class="zone-divider-dot"></span>${zone.label}
+          <span class="zone-divider-q" tabindex="0" onclick="this.classList.toggle('tip-open')">?
+            <span class="zone-tip">${zone.tip}</span>
+          </span>
+        </span>
+        <span class="zone-divider-line"></span>
+      </div>`;
+    tr.appendChild(td);
+    return tr;
+  }
+
   sorted.forEach((row, idx) => {
     const place = sortCol ? (idx + 1) : row.place;
     const wr = row.matches > 0 ? Math.round(row.wins / row.matches * 100) : 0;
@@ -1196,7 +1268,6 @@ function renderRating() {
 
     const origPlace = row.place;
     const rc = origPlace===1?'top1':origPlace===2?'top2':origPlace===3?'top3':'';
-    const total = ratingData.length;
     const zoneGreen = !sortCol && place <= 8;
     const tr = document.createElement('tr');
     const classes = [rc && !sortCol ? rc : '', zoneGreen ? 'zone-green' : ''].filter(Boolean).join(' ');
@@ -1215,6 +1286,11 @@ function renderRating() {
         </div>
       </td>`;
     tbody.appendChild(tr);
+
+    if (!sortCol) {
+      const zone = ZONES.find(z => z.after === place);
+      if (zone && place < total) tbody.appendChild(zoneDividerRow(zone));
+    }
   });
 }
 

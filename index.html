@@ -142,6 +142,22 @@ tr.zone-divider td { padding: 0; }
 .zone-divider-q.tip-open .zone-tip { visibility: visible; opacity: 1; }
 td:first-child { text-align: center; padding-left: 12px; }
 
+/* DIVISION TOGGLE */
+.division-toggle {
+  display: inline-flex; gap: 2px; margin-top: 1.6rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 3px;
+}
+.div-btn {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .06em;
+  text-transform: uppercase; border: none; background: none; color: var(--muted);
+  padding: .45rem .9rem; border-radius: 6px; cursor: pointer; transition: all .15s;
+}
+.div-btn:hover { color: var(--text); }
+.div-btn.active { background: var(--bg); color: var(--text); }
+.div-btn.div-gold.active  { color: var(--gold); }
+.div-btn.div-silver.active { color: var(--silver); }
+
 .place-num { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; }
 .p1 { color: var(--gold); } .p2 { color: var(--silver); } .p3 { color: var(--bronze); }
 .pn { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
@@ -714,6 +730,11 @@ td:first-child { text-align: center; padding-left: 12px; }
 <!-- RATING PAGE -->
 <div id="page-rating" class="page">
   <div class="table-wrap">
+    <div id="division-toggle" class="division-toggle">
+      <button class="div-btn active" data-div="all" onclick="setDivision('all')">Все</button>
+      <button class="div-btn div-gold" data-div="gold" onclick="setDivision('gold')">Gold</button>
+      <button class="div-btn div-silver" data-div="silver" onclick="setDivision('silver')">Silver</button>
+    </div>
     <div id="rating-state" class="state"><div class="spinner"></div>Загружаем рейтинг...</div>
     <table id="rating-table" style="display:none">
       <thead><tr>
@@ -1054,6 +1075,8 @@ function renderHistoryList() {
 
 let sortCol = null;   // 'wins' | 'losses' | 'matches'
 let sortDir = 'desc'; // 'asc' | 'desc'
+let divisionFilter = 'all'; // 'all' | 'gold' | 'silver'
+const GOLD_SIZE = 15;
 
 function openModal(pair, filter) {
   const labels = { wins: 'Победы', losses: 'Поражения', all: 'Все матчи' };
@@ -1213,8 +1236,18 @@ function sortBy(col) {
   renderRating();
 }
 
+function setDivision(div) {
+  divisionFilter = div;
+  document.querySelectorAll('.div-btn').forEach(b => b.classList.toggle('active', b.dataset.div === div));
+  renderRating();
+}
+
 function renderRating() {
-  const sorted = [...ratingData];
+  const sorted = [...ratingData].filter(row => {
+    if (divisionFilter === 'gold')   return row.place <= GOLD_SIZE;
+    if (divisionFilter === 'silver') return row.place > GOLD_SIZE;
+    return true;
+  });
   if (sortCol) {
     sorted.sort((a, b) => {
       const av = a[sortCol], bv = b[sortCol];
@@ -1225,11 +1258,11 @@ function renderRating() {
   const tbody = document.getElementById('rating-tbody');
   tbody.innerHTML = '';
 
-  const total = ratingData.length;
   const ZONES = [
     { after: 4,  color: 'var(--green)',  label: 'Выбор соперника',        tip: '1–4 место: команды сами выбирают соперника на плей-офф' },
     { after: 6,  color: 'var(--accent)', label: 'Гарантированный плей-офф', tip: '5–6 место: прямая путёвка в плей-офф без плей-ина' },
     { after: 10, color: 'var(--gold)',   label: 'Плей-ин',                 tip: '7–10 место: борьба за оставшиеся места в плей-офф' },
+    { after: GOLD_SIZE, color: 'var(--silver)', label: 'Silver дивизион', tip: `С ${GOLD_SIZE + 1}-го места начинается Silver дивизион` },
   ];
 
   function zoneDividerRow(zone) {
@@ -1284,9 +1317,9 @@ function renderRating() {
       </td>`;
     tbody.appendChild(tr);
 
-    if (!sortCol) {
+    if (!sortCol && idx < sorted.length - 1) {
       const zone = ZONES.find(z => z.after === place);
-      if (zone && place < total) tbody.appendChild(zoneDividerRow(zone));
+      if (zone) tbody.appendChild(zoneDividerRow(zone));
     }
   });
 }
